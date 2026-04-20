@@ -25,6 +25,30 @@ export const addMember = createAsyncThunk("workspace/addMember", async({workspac
     return response.data
 })
 
+
+export const getWorkspaceById = createAsyncThunk("workspace/getWorkspaceById", async(workspaceId)=>{
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API}/get-workspace/${workspaceId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    console.log("slice getWorkspaceById", response.data)
+    return response.data
+})  
+
+export const getWorkspaces = createAsyncThunk("workspace/getWorkspaces", async()=>{
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API}/get-workspaces`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    console.log("slice getWorkspaces", response.data)
+
+    return response.data
+})
+
 const workspaceSlice = createSlice({
     name: "workspace",
     initialState: {
@@ -55,6 +79,8 @@ const workspaceSlice = createSlice({
             state.success = false;
             state.error = action.error.message;
         })
+
+            
         .addCase(addMember.pending,(state)=>{
             state.loading = true;
             state.error = null;
@@ -65,6 +91,41 @@ const workspaceSlice = createSlice({
             state.error = null;
         })
         .addCase(addMember.rejected,(state,action)=>{
+            state.loading = false;
+            state.success = false;
+            state.error = action.error.message;
+        })
+
+
+
+        .addCase(getWorkspaceById.pending,(state)=>{
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(getWorkspaceById.fulfilled,(state,action)=>{
+            state.loading = false;
+            state.success = true;
+            state.error = null;
+        })
+        .addCase(getWorkspaceById.rejected,(state,action)=>{
+            state.loading = false;
+            state.success = false;
+            state.error = action.error.message;
+        })
+
+
+
+        .addCase(getWorkspaces.pending,(state)=>{
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(getWorkspaces.fulfilled,(state,action)=>{
+            state.loading = false;
+            state.success = true;
+            state.workspaces = action.payload;
+            state.error = null;
+        })
+        .addCase(getWorkspaces.rejected,(state,action)=>{
             state.loading = false;
             state.success = false;
             state.error = action.error.message;
