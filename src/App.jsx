@@ -16,6 +16,8 @@ import Projects from './pages/Project'
 import Boards from './pages/Boards'
 import ProtectedRoute from './components/ProtectRouter'
 import WorkspaceDetail from './pages/WorkspaceDetail'
+import AddMembers from './pages/AddMembers'
+import AcceptInvite from './pages/AcceptInvite'
 
 function App() {
 
@@ -46,8 +48,9 @@ function App() {
     <Route path='/create-workspace' element={ <ProtectedRoute> <CreateWorkspace/> </ProtectedRoute>}/>
     <Route path='/workspace/:workspaceId' element={ <ProtectedRoute> <WorkspaceDetail/> </ProtectedRoute>}/>
     <Route path='/dashboard' element={<ProtectedRoute> <Dashbord/> </ProtectedRoute>}/>
-    {/* <Route path='/dashboard/add-member/:workspaceId' element={<ProtectedRoute><Members/></ProtectedRoute>} /> */}
-    </Routes>
+    <Route path='/workspace/:workspaceId/add-members' element={<ProtectedRoute><AddMembers/></ProtectedRoute>} /> 
+    <Route path='/accept-invite' element={<AcceptInvite/>} /> 
+  </Routes>
     </BrowserRouter>
   )
 }

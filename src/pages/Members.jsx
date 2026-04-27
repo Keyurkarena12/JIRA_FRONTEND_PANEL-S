@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import {addMember} from '../features/WorkspaceSlice'
+import {inviteMember} from '../features/WorkspaceSlice'
 
 function Members() {
 

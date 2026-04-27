@@ -14,17 +14,22 @@ export const createWorkspace = createAsyncThunk("workspace/create", async(data)=
     return response.data
 })
 
-export const addMember = createAsyncThunk("workspace/addMember", async({workspaceId, email})=>{
+export const inviteMember = createAsyncThunk("workspace/add-Member", async({workspaceId, email})=>{
     const token = localStorage.getItem('token');
     const response = await axios.post(`${API}/add-member/${workspaceId}`, {email}, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     })
-    console.log("slice addMember", response.data)
+    console.log("slice inviteMember", response.data)
+    return response.data
+}) 
+
+export const acceptinvite = createAsyncThunk("workspace/accept-invite", async({token})=>{
+    const response = await axios.get(`${API}/accept-invite?token=${token}`)
+    console.log("slice acceptinvite", response.data)
     return response.data
 })
-
 
 export const getWorkspaceById = createAsyncThunk("workspace/getWorkspaceById", async(workspaceId)=>{
     const token = localStorage.getItem('token');
@@ -82,16 +87,16 @@ const workspaceSlice = createSlice({
         })
 
             
-        .addCase(addMember.pending,(state)=>{
+        .addCase(inviteMember.pending,(state)=>{
             state.loading = true;
             state.error = null;
         })
-        .addCase(addMember.fulfilled,(state,action)=>{
+        .addCase(inviteMember.fulfilled,(state,action)=>{
             state.loading = false;
             state.success = true;
             state.error = null;
         })
-        .addCase(addMember.rejected,(state,action)=>{
+        .addCase(inviteMember.rejected,(state,action)=>{
             state.loading = false;
             state.success = false;
             state.error = action.error.message;
@@ -150,6 +155,21 @@ const workspaceSlice = createSlice({
             state.error = null;
         })
         .addCase(getWorkspaces.rejected,(state,action)=>{
+            state.loading = false;
+            state.success = false;
+            state.error = action.error.message;
+        })
+
+        .addCase(acceptinvite.pending,(state)=>{
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(acceptinvite.fulfilled,(state,action)=>{
+            state.loading = false;
+            state.success = true;
+            state.error = null;
+        })
+        .addCase(acceptinvite.rejected,(state,action)=>{
             state.loading = false;
             state.success = false;
             state.error = action.error.message;

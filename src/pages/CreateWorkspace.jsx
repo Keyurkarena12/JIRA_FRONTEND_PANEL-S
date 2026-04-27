@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { createWorkspace } from '../features/workspaceSlice'
+import { createWorkspace } from '../features/WorkspaceSlice'
 
 
 function CreateWorkspace() {
