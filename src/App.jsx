@@ -15,6 +15,7 @@ import Members from './pages/Members'
 import Projects from './pages/Project'
 import Boards from './pages/Boards'
 import ProtectedRoute from './components/ProtectRouter'
+import WorkspaceDetail from './pages/WorkspaceDetail'
 
 function App() {
 
@@ -31,15 +32,21 @@ function App() {
       <Route path='/success-login' element={<AuthSuccess/>}/>
 
 
-      <Route path='/create-workspace' element={ <ProtectedRoute> <CreateWorkspace/> </ProtectedRoute>}/>
+      
 
 
-      <Route path='/dashboard' element={<Dashbord/>}/>
+      
       <Route path='/dashboard/members' element={<Members/>}/>
       <Route path='/dashboard/projects' element={<Projects/>}/>
       <Route path='/dashboard/boards' element={<Boards/>}/>
+
+      
       {/* Protected routes */}
 
+    <Route path='/create-workspace' element={ <ProtectedRoute> <CreateWorkspace/> </ProtectedRoute>}/>
+    <Route path='/workspace/:workspaceId' element={ <ProtectedRoute> <WorkspaceDetail/> </ProtectedRoute>}/>
+    <Route path='/dashboard' element={<ProtectedRoute> <Dashbord/> </ProtectedRoute>}/>
+    {/* <Route path='/dashboard/add-member/:workspaceId' element={<ProtectedRoute><Members/></ProtectedRoute>} /> */}
     </Routes>
     </BrowserRouter>
   )
