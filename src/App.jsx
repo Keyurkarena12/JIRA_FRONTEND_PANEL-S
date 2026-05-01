@@ -18,6 +18,9 @@ import ProtectedRoute from './components/ProtectRouter'
 import WorkspaceDetail from './pages/WorkspaceDetail'
 import AddMembers from './pages/AddMembers'
 import AcceptInvite from './pages/AcceptInvite'
+import ProjectsList from './pages/ProjectsList'
+import CreateProject from './pages/CreateProject'
+import CreateTask from './pages/CreateTask'
 
 function App() {
 
@@ -50,6 +53,9 @@ function App() {
     <Route path='/dashboard' element={<ProtectedRoute> <Dashbord/> </ProtectedRoute>}/>
     <Route path='/workspace/:workspaceId/add-members' element={<ProtectedRoute><AddMembers/></ProtectedRoute>} /> 
     <Route path='/accept-invite' element={<AcceptInvite/>} /> 
+    <Route path='/workspace/:workspaceId/projects' element={<ProtectedRoute><ProjectsList/></ProtectedRoute>} />
+    <Route path='/workspace/:workspaceId/create-project' element={<ProtectedRoute><CreateProject/></ProtectedRoute>} />
+    <Route path='/workspace/:workspaceId/project/:projectId/create-task' element={<ProtectedRoute><CreateTask/></ProtectedRoute>} /> 
   </Routes>
     </BrowserRouter>
   )
