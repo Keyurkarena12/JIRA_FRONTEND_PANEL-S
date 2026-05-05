@@ -20,9 +20,10 @@ function AddMembers() {
     if (success) {
       setShowSuccess(true)
       setEmail('')
-      setTimeout(() => {
+      // setTimeout(() => {
+      //   setShowSuccess(false)
+      // }, 1000)
         setShowSuccess(false)
-      }, 3000)
     }
   }, [success])
 

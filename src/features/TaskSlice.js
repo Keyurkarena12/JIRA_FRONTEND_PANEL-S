@@ -48,6 +48,20 @@ export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", as
     });
     console.log("slice assigneeTaskMember", response.data);
     return response.data;
+}); 
+
+
+export const moveTask = createAsyncThunk("task/move", async({ taskId, column }) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${TASK_API}/move/${taskId}`, {
+        column
+    }, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    console.log("moveTask response:", response.data);
+    return response.data;
 });
 
 const taskSlice = createSlice({
@@ -110,6 +124,25 @@ const taskSlice = createSlice({
                 state.error = null;
             })
             .addCase(assigneeTaskMember.rejected,(state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(moveTask.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(moveTask.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                // Update the task in the tasks array
+                const updatedTask = action.payload.task;
+                const index = state.tasks.findIndex(task => task._id === updatedTask._id);
+                if (index !== -1) {
+                    state.tasks[index] = updatedTask;
+                }
+                state.error = null;
+            })
+            .addCase(moveTask.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });

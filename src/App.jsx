@@ -53,7 +53,7 @@ function App() {
     <Route path='/dashboard' element={<ProtectedRoute> <Dashbord/> </ProtectedRoute>}/>
     <Route path='/workspace/:workspaceId/add-members' element={<ProtectedRoute><AddMembers/></ProtectedRoute>} /> 
     <Route path='/accept-invite' element={<AcceptInvite/>} /> 
-    <Route path='/workspace/:workspaceId/projects' element={<ProtectedRoute><ProjectsList/></ProtectedRoute>} />
+    <Route path='/workspace/:workspaceId' element={<ProtectedRoute><ProjectsList/></ProtectedRoute>} />
     <Route path='/workspace/:workspaceId/create-project' element={<ProtectedRoute><CreateProject/></ProtectedRoute>} />
     <Route path='/workspace/:workspaceId/project/:projectId/create-task' element={<ProtectedRoute><CreateTask/></ProtectedRoute>} /> 
   </Routes>
