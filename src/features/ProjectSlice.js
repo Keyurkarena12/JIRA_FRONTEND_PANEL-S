@@ -58,6 +58,9 @@ const projectSlice = createSlice({
         },
         setProject: (state, action) => {
             state.project = action.payload;
+        },
+        resetSuccess: (state) => {
+            state.success = false;
         }
     },
     extraReducers: (builder) => {

@@ -25,7 +25,7 @@ const ProjectsList = () => {
   }
 
   const handleProjectClick = (projectId) => {
-    navigate(`/workspace/${workspaceId}/project/${projectId}`)
+    navigate(`/workspace/${workspaceId}`)
   }
 
   if (loading) {
