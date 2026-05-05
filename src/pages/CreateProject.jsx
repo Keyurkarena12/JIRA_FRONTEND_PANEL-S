@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createProject } from '../features/ProjectSlice'
@@ -14,6 +14,11 @@ const CreateProject = () => {
   })
   
   const { loading, error, success } = useSelector((state) => state.project)
+
+  // Reset success state on component mount
+  useEffect(() => {
+    dispatch({ type: 'project/resetSuccess' })
+  }, [dispatch])
 
   const handleChange = (e) => {
     setFormData({
@@ -36,6 +41,7 @@ const CreateProject = () => {
         workspaceId
       })).unwrap()
       
+      // Navigate immediately after successful creation
       navigate(`/workspace/${workspaceId}`)
     } catch (err) {
       console.error('Failed to create project:', err)
