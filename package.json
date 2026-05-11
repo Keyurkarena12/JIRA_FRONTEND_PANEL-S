@@ -8,11 +8,14 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "init":"ngrok config add-authtoken 3C4lt2PREG31J6sdXaP0HCpKRJQ_7tWeLZTudUiVbFQJGMTVR",
-    "ngrok":"ngrok http 5173"
+    "init": "ngrok config add-authtoken 3C4lt2PREG31J6sdXaP0HCpKRJQ_7tWeLZTudUiVbFQJGMTVR",
+    
+    "ngrok": "ngrok http 5173"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.4.0",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.15.0",
     "react": "^19.2.4",
