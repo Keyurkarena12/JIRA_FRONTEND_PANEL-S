@@ -1,1 +1,99 @@
 @import "tailwindcss";
+
+/* Jira-inspired Design System */
+:root {
+  /* Atlassian/Jira Colors */
+  --jira-blue: #0052CC;
+  --jira-blue-hover: #0747A6;
+  --jira-bg: #F4F5F7;
+  --jira-sidebar: #0747A6;
+  --jira-sidebar-hover: #073e8a;
+  --jira-text: #172B4D;
+  --jira-text-secondary: #5E6C84;
+  --jira-border: #DFE1E6;
+  --jira-card: #FFFFFF;
+  --jira-success: #36B37E;
+  --jira-warning: #FFAB00;
+  --jira-danger: #DE350B;
+  --jira-info: #00B8D9;
+  
+  /* Priority Colors */
+  --priority-highest: #CD1317;
+  --priority-high: #E9494A;
+  --priority-medium: #E97F33;
+  --priority-low: #2D8738;
+  --priority-lowest: #505F79;
+  
+  /* Status Colors */
+  --status-todo: #DFE1E6;
+  --status-progress: #0747A6;
+  --status-done: #36B37E;
+}
+
+@layer base {
+  * {
+    @apply border-[var(--jira-border)];
+  }
+  body {
+    @apply bg-[var(--jira-bg)] text-[var(--jira-text)] font-sans antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--jira-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C1C7D0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A5ADBA;
+}
+
+/* Jira Components */
+.jira-card {
+  @apply bg-white rounded border border-[var(--jira-border)] shadow-sm hover:shadow-md transition-shadow;
+}
+
+.jira-btn-primary {
+  @apply bg-[var(--jira-blue)] text-white px-3 py-1.5 rounded font-medium text-sm hover:bg-[var(--jira-blue-hover)] transition-colors;
+}
+
+.jira-btn-secondary {
+  @apply bg-[var(--jira-bg)] text-[var(--jira-text)] px-3 py-1.5 rounded font-medium text-sm border border-[var(--jira-border)] hover:bg-gray-200 transition-colors;
+}
+
+.jira-input {
+  @apply w-full px-3 py-2 border border-[var(--jira-border)] rounded text-sm focus:outline-none focus:ring-2 focus:ring-[var(--jira-blue)] focus:border-transparent;
+}
+
+.jira-sidebar-item {
+  @apply flex items-center gap-3 px-3 py-2 text-white/90 hover:bg-white/10 rounded cursor-pointer transition-colors;
+}
+
+.jira-sidebar-item.active {
+  @apply bg-white/20 text-white;
+}
+
+.jira-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.jira-badge-priority-highest { @apply bg-red-100 text-red-700; }
+.jira-badge-priority-high { @apply bg-orange-100 text-orange-700; }
+.jira-badge-priority-medium { @apply bg-yellow-100 text-yellow-700; }
+.jira-badge-priority-low { @apply bg-green-100 text-green-700; }
+.jira-badge-priority-lowest { @apply bg-gray-100 text-gray-700; }
+
+.jira-badge-status-todo { @apply bg-gray-100 text-gray-700; }
+.jira-badge-status-progress { @apply bg-blue-100 text-blue-700; }
+.jira-badge-status-done { @apply bg-green-100 text-green-700; }
