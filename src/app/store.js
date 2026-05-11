@@ -3,6 +3,8 @@ import authReducer from '../features/authSlice'
 import workspaceReducer from '../features/WorkspaceSlice'
 import projectReducer from '../features/ProjectSlice'
 import taskReducer from '../features/TaskSlice'
+import subscriptionReducer from '../features/subscriptionSlice'
+import billingReducer from '../features/billingSlice'
 
 export const store = configureStore({
     
@@ -11,6 +13,8 @@ export const store = configureStore({
         workspace: workspaceReducer,
         project: projectReducer,
         task: taskReducer,
+        subscription: subscriptionReducer,
+        billing: billingReducer,
     } 
 
 })

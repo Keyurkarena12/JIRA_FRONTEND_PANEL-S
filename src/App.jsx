@@ -19,8 +19,11 @@ import WorkspaceDetail from './pages/WorkspaceDetail'
 import AddMembers from './pages/AddMembers'
 import AcceptInvite from './pages/AcceptInvite'
 import ProjectsList from './pages/ProjectsList'
+import Pricing from './pages/Pricing'
+import BillingSuccess from './pages/BillingSuccess'
 import CreateProject from './pages/CreateProject'
 import CreateTask from './pages/CreateTask'
+import Settings from './pages/Settings'
 
 function App() {
 
@@ -35,10 +38,9 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword/>}/>
       <Route path="/reset-password" element={<ResetPassword/>}/>
       <Route path='/success-login' element={<AuthSuccess/>}/>
-
-
-      
-
+      <Route path='/pricing' element={<Pricing/>}/>
+      <Route path='/billing/success' element={<BillingSuccess/>}/>
+      <Route path='/settings' element={<ProtectedRoute><Settings/></ProtectedRoute>}/>
 
       
       <Route path='/dashboard/members' element={<Members/>}/>
