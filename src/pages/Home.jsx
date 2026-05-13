@@ -60,7 +60,7 @@ const Home = () => {
         </h2>
 
         <button
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/")}
           className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
         >
           Get Started Now

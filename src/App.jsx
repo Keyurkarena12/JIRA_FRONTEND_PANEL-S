@@ -10,7 +10,7 @@ import Navbar from './components/Navbar'
 import ForgotPassword from './pages/ForgotPassword'
 import AuthSuccess from './pages/AuthSuccess'
 import CreateWorkspace from './pages/CreateWorkspace'
-import Dashbord from './pages/Dashbord'
+import Workspaces from './pages/WorkspaceDetail'
 import Members from './pages/Members'
 import Projects from './pages/Project'
 import Boards from './pages/Boards'
@@ -43,16 +43,15 @@ function App() {
       <Route path='/settings' element={<ProtectedRoute><Settings/></ProtectedRoute>}/>
 
       
-      <Route path='/dashboard/members' element={<Members/>}/>
-      <Route path='/dashboard/projects' element={<Projects/>}/>
-      <Route path='/dashboard/boards' element={<Boards/>}/>
-
       
       {/* Protected routes */}
 
+    <Route path='/workspaces' element={<ProtectedRoute> <Workspaces/> </ProtectedRoute>}/>
+    <Route path='/members' element={<ProtectedRoute> <Members/> </ProtectedRoute>}/>
+    <Route path='/projects' element={<ProtectedRoute> <Projects/> </ProtectedRoute>}/>
+    <Route path='/boards' element={<ProtectedRoute> <Boards/> </ProtectedRoute>}/>
     <Route path='/create-workspace' element={ <ProtectedRoute> <CreateWorkspace/> </ProtectedRoute>}/>
     <Route path='/workspace/:workspaceId' element={ <ProtectedRoute> <WorkspaceDetail/> </ProtectedRoute>}/>
-    <Route path='/dashboard' element={<ProtectedRoute> <Dashbord/> </ProtectedRoute>}/>
     <Route path='/workspace/:workspaceId/add-members' element={<ProtectedRoute><AddMembers/></ProtectedRoute>} /> 
     <Route path='/accept-invite' element={<AcceptInvite/>} /> 
     <Route path='/workspace/:workspaceId' element={<ProtectedRoute><ProjectsList/></ProtectedRoute>} />

@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser, currentUser, updateProfile } from "../features/authSlice";
+import { logoutUser, currentUser } from "../features/authSlice";
 import { fetchPlans, createCheckoutSession } from "../features/subscriptionSlice";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileData, setProfileData] = useState({ name: '', photo: null });
-
   const { user } = useSelector((state) => state.auth);
   const { plans, loading: plansLoading } = useSelector((state) => state.subscription);
   const token = localStorage.getItem("token");
@@ -34,18 +31,6 @@ const Navbar = () => {
   const handleLogout = async () => {
     await dispatch(logoutUser());
     navigate("/login");
-  };
-
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', profileData.name);
-    if (profileData.photo) {
-      formData.append('photo', profileData.photo);
-    }
-    await dispatch(updateProfile(formData));
-    setShowProfileModal(false);
-    setShowProfileDropdown(false);
   };
 
   return (
@@ -80,15 +65,15 @@ const Navbar = () => {
                 Home
               </Link>
 
-              {/* Dashboard */}
+              {/* My Workspace */}
               <Link
-                to="/dashboard"
+                to="/workspaces"
                 className="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium transition-all duration-200 flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                Dashboard
+                My Workspace
               </Link>
 
               {/* Pricing */}
@@ -103,7 +88,7 @@ const Navbar = () => {
               </Link>
 
               {/* Settings */}
-              <Link
+              {/* <Link
                 to="/settings"
                 className="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium transition-all duration-200 flex items-center gap-2"
               >
@@ -112,7 +97,7 @@ const Navbar = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Settings
-              </Link>
+              </Link> */}
 
             </div>
           )}
@@ -159,28 +144,9 @@ const Navbar = () => {
                   </div>
 
                   <div className="py-2">
-                    {/* Edit Profile */}
-                    <button
-                      onClick={() => {
-                        setShowProfileModal(true);
-                        setProfileData({ name: user?.name || '', photo: null });
-                        setShowProfileDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-gray-700 transition-colors"
-                    >
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium">Edit Profile</p>
-                        <p className="text-xs text-gray-500">Update your information</p>
-                      </div>
-                    </button>
-
+                    
                     {/* Upgrade Plan link */}
-                    <Link
+                    {/* <Link
                       to="/pricing"
                       onClick={() => setShowProfileDropdown(false)}
                       className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 text-blue-600 transition-colors"
@@ -194,7 +160,7 @@ const Navbar = () => {
                         <p className="font-medium">Upgrade Plan</p>
                         <p className="text-xs text-blue-400">View pricing options</p>
                       </div>
-                    </Link>
+                    </Link> */}
 
                     {/* Settings */}
                     <Link
@@ -254,58 +220,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Profile Update Modal */}
-      {showProfileModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900">Update Profile</h3>
-              <p className="text-sm text-gray-500 mt-1">Update your personal information</p>
-            </div>
-            <form onSubmit={handleProfileUpdate} className="p-6">
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Photo
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setProfileData({ ...profileData, photo: e.target.files[0] })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium transition-colors"
-                >
-                  Update Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowProfileModal(false)}
-                  className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </nav>
+          </nav>
   );
 };
 

@@ -8,7 +8,6 @@ function CreateWorkspace() {
 
   const [formData, setFormData] = useState({
     name: '',
-    slug: '',
     description: ''
   })
 
@@ -22,7 +21,7 @@ function CreateWorkspace() {
     e.preventDefault()
     dispatch(createWorkspace(formData))
     .then(() => {
-      navigate('/dashboard')
+      navigate('/workspaces')
     })
     .catch((err) => {
       console.log(err)
@@ -51,15 +50,6 @@ function CreateWorkspace() {
           required
         />
 
-        {/* Slug */}
-        <input
-          type="text"
-          name="slug"
-          placeholder="Workspace Slug (unique)"
-          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-          className="w-full mb-4 p-3 border rounded"
-          required
-        />
 
         {/* Description */}
         <textarea
