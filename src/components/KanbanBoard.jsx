@@ -104,9 +104,10 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
       draggable
       onDragStart={(e) => handleDragStart(e, task)}
       onDragEnd={handleDragEnd}
-      onClick={() => setSelectedTaskId(task._id)}
-      className={`bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:ring-2 hover:ring-blue-200 transition-all duration-200 group ${
-        draggedTask?._id === task._id ? 'opacity-50 cursor-move' : ''
+      className={`bg-white p-4  rounded-lg shadow-sm cursor-move hover:shadow-md transition-all duration-200 ${
+        dragOverColumn === task.column ? 'ring-2 ring-blue-400 scale-105' : ''
+      } ${
+        draggedTask?._id === task._id ? 'opacity-50' : ''
       }`}
     >
       <div className="flex items-start justify-between mb-2">
@@ -155,7 +156,7 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
 
   const Column = ({ title, column, bgColor, headerColor, dotColor }) => (
     <div className="flex-shrink-0 w-80">
-      <div className={`${bgColor} rounded-lg p-3 transition-all duration-200 ${
+      <div className={`${bgColor} rounded-lg p-3 ml-2 mt-10 transition-all duration-200 ${
         dragOverColumn === column ? 'ring-2 ring-blue-400 bg-opacity-80' : ''
       }`}>
         <div className="flex items-center justify-between mb-4">

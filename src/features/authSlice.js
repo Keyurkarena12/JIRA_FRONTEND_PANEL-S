@@ -91,23 +91,24 @@ export const currentUser = createAsyncThunk('auth/currentUser',async()=>{
 
 
 
-export const updateProfile = createAsyncThunk('auth/updateProfile',async(data)=>{
+export const updateProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async (data, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
 
-    const token = localStorage.getItem('token');
+            const response = await axios.post(`${API}/update-profile`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
-    const response = await axios.post(`${API}/update-profile`,data,{
-
-        headers: {
-
-            'Authorization': `Bearer ${token}`
-
+            return response.data.user;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
         }
-
-    })
-
-    return response.data
-
-})
+    }
+)
 
 
 
@@ -273,7 +274,7 @@ const authSlice = createSlice({
 
                 state.loading = false;
 
-                state.error = action.error.message;
+                state.error = action.payload || action.error.message;
 
             })
 
