@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile } from '../features/authSlice';
 import { fetchBillingHistory } from '../features/billingSlice';
@@ -31,6 +31,7 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef(null);
 
   // Fetch plans on component mount
   useEffect(() => {
@@ -50,6 +51,24 @@ const Settings = () => {
     name: user?.name || '',
     email: user?.email || ''
   });
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+
+  useEffect(() => {
+    setGeneralSettings({
+      name: user?.name || '',
+      email: user?.email || ''
+    });
+  }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
 
   // Account settings state
   const [accountSettings, setAccountSettings] = useState({
@@ -57,6 +76,7 @@ const Settings = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const currentAvatarUrl = removeAvatar ? '' : (avatarPreview || user?.avatar?.url || '');
 
   // Get current plan details
   const currentPlan = plans.find(p => p.name === user?.specificPlan);
@@ -68,14 +88,62 @@ const Settings = () => {
     setMessage('');
 
     try {
-      await dispatch(updateProfile({ name: generalSettings.name })).unwrap();
+      const formData = new FormData();
+      formData.append('name', generalSettings.name);
+
+      if (selectedAvatar) {
+        formData.append('photo', selectedAvatar);
+      }
+
+      if (removeAvatar && !selectedAvatar) {
+        formData.append('removeAvatar', 'true');
+      }
+
+      await dispatch(updateProfile(formData)).unwrap();
+
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+      setSelectedAvatar(null);
+      setAvatarPreview('');
+      setRemoveAvatar(false);
       setMessage('Profile updated successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setError('Failed to update profile');
+      setError(err || 'Failed to update profile');
       setTimeout(() => setError(''), 3000);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setSelectedAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setRemoveAvatar(false);
+  };
+
+  const handleAvatarRemove = () => {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarPreview('');
+    setSelectedAvatar(null);
+    setRemoveAvatar(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -236,22 +304,57 @@ const Settings = () => {
                   Avatar
                 </label>
                 <div className="flex items-center space-x-4">
-                  {user?.avatar?.url ? (
+                  {currentAvatarUrl ? (
                     <img
-                      src={user.avatar.url}
+                      src={currentAvatarUrl}
                       alt="Avatar"
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-gray-600 text-xl">
-                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </span>
-                    </div>
+                    <>
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar preview"
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-gray-600 text-xl">
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
                   <div>
                     <p className="text-sm text-gray-600">Profile picture</p>
-                    <p className="text-xs text-gray-500">Avatar change coming soon</p>
+                    <p className="text-xs text-gray-500">Upload JPG, PNG, or WebP</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                      >
+                        Change
+                      </button>
+                      {(user?.avatar?.url || avatarPreview) && !removeAvatar && (
+                        <button
+                          type="button"
+                          onClick={handleAvatarRemove}
+                          className="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
