@@ -6,8 +6,6 @@ const TASK_API = "http://localhost:5000/api/task";
 
 export const createTask = createAsyncThunk("task/create", async({ title, description, projectId, column, priority, dueDate }) => {
     const token = localStorage.getItem('token');
-    console.log("task slice token",token)
-    // console.log("task data", { title, description, projectId, column, priority, dueDate });
     const response = await axios.post(`${PROJECT_API}/task/${projectId}`, {
         title,
         description,
@@ -15,26 +13,41 @@ export const createTask = createAsyncThunk("task/create", async({ title, descrip
         priority,
         dueDate
     }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     });
-    console.log("slice createTask", response.data);
     return response.data;
 });
 
-
 export const fetchprojectTask = createAsyncThunk("task/fetchproject", async(projectId) => {
     const token = localStorage.getItem('token');
-    console.log("Fetching tasks for projectId:", projectId);
-    console.log("Token:", token ? "exists" : "missing");
     const response = await axios.get(`${TASK_API}/project/${projectId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     });
-    console.log("slice fetchproject response:", response.data);
     return response.data;
+});
+
+export const getTaskById = createAsyncThunk("task/getById", async(taskId) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${TASK_API}/${taskId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
+});
+
+export const updateTask = createAsyncThunk("task/update", async({ taskId, ...fields }) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.put(`${TASK_API}/${taskId}`, fields, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
+});
+
+export const deleteTask = createAsyncThunk("task/delete", async(taskId) => {
+    const token = localStorage.getItem('token');
+    await axios.delete(`${TASK_API}/${taskId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return { taskId };
 });
 
 export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", async({ taskId, memberId }) => {
@@ -42,25 +55,18 @@ export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", as
     const response = await axios.post(`${TASK_API}/assignee/${taskId}`, {
         assigneeId: memberId
     }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     });
-    console.log("slice assigneeTaskMember", response.data);
     return response.data;
 }); 
-
 
 export const moveTask = createAsyncThunk("task/move", async({ taskId, column }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${TASK_API}/move/${taskId}`, {
         column
     }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     });
-    console.log("moveTask response:", response.data);
     return response.data;
 });
 
@@ -80,6 +86,9 @@ const taskSlice = createSlice({
         },
         setTask: (state, action) => {
             state.task = action.payload;
+        },
+        clearSelectedTask: (state) => {
+            state.task = null;
         }
     },
     extraReducers: (builder) => {
@@ -99,21 +108,56 @@ const taskSlice = createSlice({
                 state.success = false;
                 state.error = action.error.message;
             })
+
             .addCase(fetchprojectTask.pending,(state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchprojectTask.fulfilled,(state, action) => {
-                console.log("fetchprojectTask fulfilled, payload:", action.payload);
+
                 state.loading = false;
                 state.tasks = action.payload.task;
                 state.error = null;
-                console.log("Updated tasks state:", state.tasks);
             })
             .addCase(fetchprojectTask.rejected,(state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
+
+            .addCase(getTaskById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getTaskById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.task = action.payload.task;
+                state.error = null;
+            })
+            .addCase(getTaskById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+
+            .addCase(updateTask.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateTask.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                const updated = action.payload.task;
+                // Update in tasks list
+                const idx = state.tasks.findIndex(t => t._id === updated._id);
+                if (idx !== -1) state.tasks[idx] = updated;
+                // Update selected task
+                state.task = updated;
+                state.error = null;
+            })
+            .addCase(updateTask.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+
             .addCase(assigneeTaskMember.pending,(state) => {
                 state.loading = true;
                 state.error = null;
@@ -121,12 +165,16 @@ const taskSlice = createSlice({
             .addCase(assigneeTaskMember.fulfilled,(state, action) => {
                 state.loading = false;
                 state.success = true;
+                const updated = action.payload.task;
+                const idx = state.tasks.findIndex(t => t._id === updated._id);
+                if (idx !== -1) state.tasks[idx] = updated;
                 state.error = null;
             })
             .addCase(assigneeTaskMember.rejected,(state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
+
             .addCase(moveTask.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -134,7 +182,6 @@ const taskSlice = createSlice({
             .addCase(moveTask.fulfilled, (state, action) => {
                 state.loading = false;
                 state.success = true;
-                // Update the task in the tasks array
                 const updatedTask = action.payload.task;
                 const index = state.tasks.findIndex(task => task._id === updatedTask._id);
                 if (index !== -1) {
@@ -145,9 +192,25 @@ const taskSlice = createSlice({
             .addCase(moveTask.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+
+            .addCase(deleteTask.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteTask.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                state.tasks = state.tasks.filter(t => t._id !== action.payload.taskId);
+                state.task = null;
+                state.error = null;
+            })
+            .addCase(deleteTask.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     }
 });
 
-export const { clearTasks, setTask } = taskSlice.actions;
+export const { clearTasks, setTask, clearSelectedTask } = taskSlice.actions;
 export default taskSlice.reducer;

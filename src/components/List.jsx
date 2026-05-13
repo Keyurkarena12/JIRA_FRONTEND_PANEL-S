@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { assigneeTaskMember, fetchprojectTask } from '../features/TaskSlice';
+import TaskDetailModal from './TaskDetailModal';
 
-const List = ({ 
-  tasks, 
-  taskLoading, 
-  selectedProject, 
-  showAssigneeDropdown, 
+const List = ({
+  tasks,
+  taskLoading,
+  selectedProject,
+  showAssigneeDropdown,
   selectedAssignee,
   setShowAssigneeDropdown,
-  setSelectedAssignee
+  setSelectedAssignee,
+  workspaceMembers
 }) => {
   const dispatch = useDispatch();
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
@@ -21,7 +24,7 @@ const List = ({
           <span className="ml-2 text-gray-600">Loading tasks...</span>
         </div>
       )}
-      
+
       {/* Task Filters and Actions */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -78,27 +81,36 @@ const List = ({
           <tbody className="divide-y divide-gray-200">
             {tasks && tasks.length > 0 ? (
               tasks.map((task) => (
-                <tr key={task._id} className="hover:bg-gray-50 cursor-pointer">
+                <tr
+                  key={task._id}
+                  className="hover:bg-blue-50 cursor-pointer transition-colors group"
+                  onClick={() => setSelectedTaskId(task._id)}
+                >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      <input type="checkbox" className="rounded border-gray-300" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       <div>
-                        <div className="font-medium text-gray-900">{task.title}</div>
+                        <div className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors">
+                          {task.title}
+                        </div>
                         {task.description && (
                           <div className="text-sm text-gray-500 truncate max-w-xs">{task.description}</div>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    {/* com--------------- */}
+                  <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                     <div className="relative">
                       <button
                         onClick={() => {
                           setShowAssigneeDropdown(showAssigneeDropdown === task._id ? null : task._id);
                           setSelectedAssignee(task.assignee?._id || '');
                         }}
-                        className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded transition-colors"
+                        className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded transition-colors"
                       >
                         {task.assignee ? (
                           <>
@@ -123,7 +135,7 @@ const List = ({
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
-                      
+
                       {showAssigneeDropdown === task._id && (
                         <div className="absolute left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                           <div className="p-3">
@@ -154,13 +166,11 @@ const List = ({
                                 onClick={async () => {
                                   try {
                                     await dispatch(assigneeTaskMember({
-                                      taskId: task._id, 
-                                      memberId: selectedAssignee || null 
+                                      taskId: task._id,
+                                      memberId: selectedAssignee || null
                                     })).unwrap();
-                                    console.log('Task assigned successfully');
                                     setShowAssigneeDropdown(null);
                                     setSelectedAssignee('');
-                                    // Refresh tasks
                                     dispatch(fetchprojectTask(selectedProject._id));
                                   } catch (error) {
                                     console.error('Failed to assign task:', error);
@@ -175,16 +185,13 @@ const List = ({
                         </div>
                       )}
                     </div>
-
-                    {/* com--------------- */}
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                      task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                        task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                      }`}>
                       {task.priority}
                     </span>
                   </td>
@@ -198,12 +205,10 @@ const List = ({
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      task.column === 'complete' ? 'bg-green-100 text-green-700' :
-                      task.column === 'in progress' ? 'bg-blue-100 text-blue-700' :
-                      task.column === 'to do' ? 'bg-gray-100 text-gray-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${task.column === 'complete' ? 'bg-green-100 text-green-700' :
+                        task.column === 'in progress' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                      }`}>
                       {task.column || 'no status'}
                     </span>
                   </td>
@@ -227,8 +232,19 @@ const List = ({
           </tbody>
         </table>
       </div>
+
+      {/* Task Detail Modal */}
+      {selectedTaskId && (
+        <TaskDetailModal
+          taskId={selectedTaskId}
+          onClose={() => setSelectedTaskId(null)}
+          selectedProject={selectedProject}
+          workspaceMembers={workspaceMembers}
+        />
+      )}
     </div>
   );
 };
 
 export default List;
+

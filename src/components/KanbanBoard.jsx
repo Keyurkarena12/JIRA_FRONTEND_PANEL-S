@@ -1,49 +1,26 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {assigneeTaskMember,fetchprojectTask,moveTask } from '../features/TaskSlice';
+import TaskDetailModal from './TaskDetailModal';
 
-const KanbanBoard = ({ tasks, loading, selectedProject }) => {
+const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
   const dispatch = useDispatch();
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
-  console.log('=== KANBAN BOARD PROPS ===');
-  console.log('Tasks:', tasks);
-  console.log('Tasks length:', tasks?.length);
-  console.log('Loading:', loading);
-  console.log('=== END PROPS ===');
+
 
   // Group tasks by column
   const getTasksByColumn = (column) => {
-    console.log('=== DEBUGGING COLUMN ===');
-    console.log('Column requested:', column);
-    console.log('Tasks:', tasks);
-    
-    if (!tasks || !Array.isArray(tasks)) {
-      console.log('No tasks or not an array');
-      return [];
-    }
-    
-    // Handle different case variations of column names
+    if (!tasks || !Array.isArray(tasks)) return [];
     const columnVariations = {
       'to do': ['to do', 'To Do', 'todo', 'Todo', 'TODO'],
       'in progress': ['in progress', 'In Progress', 'inprogress', 'Inprogress', 'IN PROGRESS'],
       'complete': ['complete', 'Complete', 'completed', 'Completed', 'COMPLETE']
     };
-    
     const validColumns = columnVariations[column] || [column];
-    
-    const filtered = tasks.filter(task => {
-      const taskColumn = task.column;
-      const matches = validColumns.includes(taskColumn);
-      console.log('Task:', task.title, 'Column:', taskColumn, 'Matches:', matches);
-      return matches;
-    });
-    
-    console.log('Filtered tasks for', column, ':', filtered);
-    console.log('Filtered count:', filtered.length);
-    console.log('=== END DEBUGGING ===');
-    return filtered;
+    return tasks.filter(task => validColumns.includes(task.column));
   };
 
   // Drag and drop handlers
@@ -127,14 +104,13 @@ const KanbanBoard = ({ tasks, loading, selectedProject }) => {
       draggable
       onDragStart={(e) => handleDragStart(e, task)}
       onDragEnd={handleDragEnd}
-      className={`bg-white p-4 rounded-lg shadow-sm cursor-move hover:shadow-md transition-all duration-200 ${
-        dragOverColumn === task.column ? 'ring-2 ring-blue-400 scale-105' : ''
-      } ${
-        draggedTask?._id === task._id ? 'opacity-50' : ''
+      onClick={() => setSelectedTaskId(task._id)}
+      className={`bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:ring-2 hover:ring-blue-200 transition-all duration-200 group ${
+        draggedTask?._id === task._id ? 'opacity-50 cursor-move' : ''
       }`}
     >
       <div className="flex items-start justify-between mb-2">
-        <span className="text-xs font-mono text-gray-500">{task.taskKey}</span>
+        <span className="text-xs font-mono text-gray-400">{task.taskKey}</span>
         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
           task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
           task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
@@ -144,13 +120,13 @@ const KanbanBoard = ({ tasks, loading, selectedProject }) => {
           {task.priority}
         </span>
       </div>
-      <h4 className="font-medium text-gray-900 mb-2">{task.title}</h4>
+      <h4 className="font-medium text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">{task.title}</h4>
       {task.description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
+        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{task.description}</p>
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-2">
         {task.assignee ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <img
               src={`https://ui-avatars.com/api/?name=${task.assignee.name || task.assignee}&background=6366f1&color=fff&size=24`}
               alt={task.assignee.name || task.assignee}
@@ -159,14 +135,17 @@ const KanbanBoard = ({ tasks, loading, selectedProject }) => {
             <span className="text-xs text-gray-600">{task.assignee.name || task.assignee}</span>
           </div>
         ) : (
-          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-            <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+          <div className="flex items-center gap-1.5 text-gray-400">
+            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <span className="text-xs">Unassigned</span>
           </div>
         )}
         {task.dueDate && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-400">
             {new Date(task.dueDate).toLocaleDateString()}
           </span>
         )}
@@ -232,6 +211,7 @@ const KanbanBoard = ({ tasks, loading, selectedProject }) => {
         <h2 className="text-xl font-semibold text-gray-900">Kanban Board</h2>
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>{tasks?.length || 0} tasks</span>
+          <span className="text-xs text-gray-400">· Click a card to open</span>
         </div>
       </div>
       
@@ -258,6 +238,16 @@ const KanbanBoard = ({ tasks, loading, selectedProject }) => {
           dotColor="bg-green-500"
         />
       </div>
+
+      {/* Task Detail Modal */}
+      {selectedTaskId && (
+        <TaskDetailModal
+          taskId={selectedTaskId}
+          onClose={() => setSelectedTaskId(null)}
+          selectedProject={selectedProject}
+          workspaceMembers={workspaceMembers}
+        />
+      )}
     </div>
   );
 };

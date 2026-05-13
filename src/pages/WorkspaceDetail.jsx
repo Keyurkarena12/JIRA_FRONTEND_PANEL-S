@@ -542,6 +542,7 @@ const WorkspaceDetail = () => {
                           selectedAssignee={selectedAssignee}
                           setShowAssigneeDropdown={setShowAssigneeDropdown}
                           setSelectedAssignee={setSelectedAssignee}
+                          workspaceMembers={workspace?.members}
                         />
                       )}
                       {projectView === "board" && (
@@ -549,6 +550,7 @@ const WorkspaceDetail = () => {
                           tasks={tasks} 
                           loading={taskLoading} 
                           selectedProject={selectedProject}
+                          workspaceMembers={workspace?.members}
                         />
                       )}
                       {projectView === "chat" && (
