@@ -42,14 +42,14 @@ const CreateProject = () => {
       })).unwrap()
       
       // Navigate immediately after successful creation
-      navigate(`/workspace/${workspaceId}`)
+      navigate(`/workspace/${workspaceId}`, { state: { activeTab: 'projects' } })
     } catch (err) {
       console.error('Failed to create project:', err)
     }
   }
 
   const handleBack = () => {
-    navigate(`/workspace/${workspaceId}`)
+    navigate(`/workspace/${workspaceId}`, { state: { activeTab: 'projects' } })
   }
 
   return (
