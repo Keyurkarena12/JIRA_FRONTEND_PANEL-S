@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getWorkspaceById } from "../features/WorkspaceSlice";
 import { getAllProjects } from "../features/ProjectSlice";
 import { fetchprojectTask, assigneeTaskMember, moveTask } from "../features/TaskSlice";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import SubNavbar from "../components/SubNavbar";
 import KanbanBoard from "../components/KanbanBoard";
 import List from "../components/List";
@@ -13,6 +13,7 @@ const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -40,6 +41,31 @@ const WorkspaceDetail = () => {
       dispatch(getAllProjects({ workspaceId }));
     }
   }, [activeTab, workspaceId, dispatch]);
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+      // Clear activeTab from state
+      navigate(location.pathname, { 
+        replace: true, 
+        state: { ...location.state, activeTab: undefined } 
+      });
+    }
+  }, [location.state?.activeTab, navigate, location.pathname]);
+
+  useEffect(() => {
+    if (location.state?.projectId && projects?.length > 0) {
+      const proj = projects.find(p => p._id === location.state.projectId);
+      if (proj) {
+        setSelectedProject(proj);
+        // Clear the state so we don't get stuck if user clears the selection
+        navigate(location.pathname, { 
+          replace: true, 
+          state: { ...location.state, projectId: undefined } 
+        });
+      }
+    }
+  }, [location.state, projects, navigate, location.pathname]);
 
   useEffect(() => {
     if (selectedProject) {
