@@ -42,6 +42,17 @@ export const updateProject = createAsyncThunk("project/update", async({ projectI
     return response.data;
 });
 
+export const deleteProject = createAsyncThunk("project/delete", async(projectId) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.delete(`${API}/delete-project/${projectId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    console.log("slice deleteProject", response.data);
+    return response.data;
+});
+
 const projectSlice = createSlice({
     name: "project",
     initialState: {
@@ -109,6 +120,21 @@ const projectSlice = createSlice({
                 state.error = null;
             })
             .addCase(updateProject.rejected, (state, action) => {
+                state.loading = false;
+                state.success = false;
+                state.error = action.error.message;
+            })
+            .addCase(deleteProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteProject.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                state.projects = state.projects.filter(project => project._id !== action.payload.projectId);
+                state.error = null;
+            })
+            .addCase(deleteProject.rejected, (state, action) => {
                 state.loading = false;
                 state.success = false;
                 state.error = action.error.message;
