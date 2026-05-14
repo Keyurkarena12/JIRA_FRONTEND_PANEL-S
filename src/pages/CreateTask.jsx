@@ -41,15 +41,14 @@ const CreateTask = () => {
         priority: formData.priority,
         dueDate: formData.dueDate || undefined
       })).unwrap()
-      
-      navigate(`/workspace/${workspaceId}`)
+      navigate(`/workspace/${workspaceId}`, { state: { activeTab: 'projects', projectId: projectId } })
     } catch (err) {
       console.error('Failed to create task:', err)
     }
   }
 
   const handleBack = () => {
-    navigate(`/workspace/${workspaceId}`)
+    navigate(`/workspace/${workspaceId}`, { state: { activeTab: 'projects', projectId: projectId } })
   }
 
   const columns = [
