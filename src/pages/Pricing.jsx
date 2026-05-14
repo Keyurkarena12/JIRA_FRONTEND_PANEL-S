@@ -6,10 +6,11 @@ import { Link } from 'react-router-dom';
 
 const PLAN_LEVEL = {
   free: 0,
-  pro_monthly: 1,
-  pro_yearly: 2,
-  enterprise_monthly: 3,
-  enterprise_yearly: 4
+  pro_daily: 1,
+  pro_monthly: 2,
+  pro_yearly: 3,
+  enterprise_monthly: 4,
+  enterprise_yearly: 5
 };
 
 const getPlanLevel = (specificPlanName) => {
@@ -227,7 +228,7 @@ const Pricing = () => {
                     >
                       <div>
                         <p className="font-medium text-gray-900">
-                          {plan.billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}
+                          {plan.billingCycle === 'monthly' ? 'Monthly' : plan.billingCycle === 'daily' ? 'Daily' : 'Yearly'}
                           {isCurrentSpecificPlan(plan.name) && (
                             <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
                               Current
@@ -237,7 +238,7 @@ const Pricing = () => {
                         <p className="text-2xl font-bold text-blue-600">
                           ₹{plan.price}
                           <span className="text-sm text-gray-500 font-normal">
-                            /{plan.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                            /{plan.billingCycle === 'monthly' ? 'mo' : plan.billingCycle === 'daily' ? 'day' : 'yr'}
                           </span>
                         </p>
                       </div>
@@ -300,7 +301,7 @@ const Pricing = () => {
                     >
                       <div>
                         <p className="font-medium text-gray-900">
-                          {plan.billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}
+                          {plan.billingCycle === 'monthly' ? 'Monthly' : plan.billingCycle === 'daily' ? 'Daily' : 'Yearly'}
                           {isCurrentSpecificPlan(plan.name) && (
                             <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full font-medium">
                               Current
@@ -310,7 +311,7 @@ const Pricing = () => {
                         <p className="text-2xl font-bold text-purple-600">
                           ₹{plan.price}
                           <span className="text-sm text-gray-500 font-normal">
-                            /{plan.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                            /{plan.billingCycle === 'monthly' ? 'mo' : plan.billingCycle === 'daily' ? 'day' : 'yr'}
                           </span>
                         </p>
                       </div>
