@@ -53,6 +53,20 @@ export const deleteProject = createAsyncThunk("project/delete", async(projectId)
     return response.data;
 });
 
+export const addProjectMember = createAsyncThunk("project/addMember", async({ projectId, userId, role }) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${API}/add-projectmember/${projectId}`, {
+        userId,
+        role
+    }, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    console.log("slice addProjectMember", response.data);
+    return response.data;
+});
+
 const projectSlice = createSlice({
     name: "project",
     initialState: {
@@ -135,6 +149,24 @@ const projectSlice = createSlice({
                 state.error = null;
             })
             .addCase(deleteProject.rejected, (state, action) => {
+                state.loading = false;
+                state.success = false;
+                state.error = action.error.message;
+            })
+            .addCase(addProjectMember.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(addProjectMember.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                const index = state.projects.findIndex(project => project._id === action.payload.project._id);
+                if (index !== -1) {
+                    state.projects[index] = action.payload.project;
+                }
+                state.error = null;
+            })
+            .addCase(addProjectMember.rejected, (state, action) => {
                 state.loading = false;
                 state.success = false;
                 state.error = action.error.message;
