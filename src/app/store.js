@@ -5,6 +5,7 @@ import projectReducer from '../features/ProjectSlice'
 import taskReducer from '../features/TaskSlice'
 import subscriptionReducer from '../features/subscriptionSlice'
 import billingReducer from '../features/billingSlice'
+import chatReducer from '../features/ChatSlice'
 
 export const store = configureStore({
     
@@ -15,6 +16,7 @@ export const store = configureStore({
         task: taskReducer,
         subscription: subscriptionReducer,
         billing: billingReducer,
+        chat: chatReducer,
     } 
 
-})
+})

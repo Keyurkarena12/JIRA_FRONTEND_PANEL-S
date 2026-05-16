@@ -8,6 +8,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import SubNavbar from "../components/SubNavbar";
 import KanbanBoard from "../components/KanbanBoard";
 import List from "../components/List";
+import Chat from "../components/Chat/Chat";
 
 const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
@@ -660,10 +661,7 @@ const WorkspaceDetail = () => {
                         />
                       )}
                       {projectView === "chat" && (
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Chat</h2>
-                          <p className="text-gray-600">Chat functionality coming soon...</p>
-                        </div>
+                        <Chat workspaceId={workspaceId} projectId={selectedProject?._id} />
                       )}
                       {projectView === "calendar" && (
                         <div className="bg-white rounded-xl shadow-sm p-6">
