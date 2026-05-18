@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getWorkspaceById } from "../features/WorkspaceSlice";
-import { getAllProjects, updateProject, deleteProject } from "../features/ProjectSlice";
+import { getAllProjects, updateProject, deleteProject, addProjectMember } from "../features/ProjectSlice";
 import { fetchprojectTask, assigneeTaskMember, moveTask } from "../features/TaskSlice";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import SubNavbar from "../components/SubNavbar";
 import KanbanBoard from "../components/KanbanBoard";
 import List from "../components/List";
+import Chat from "../components/Chat/Chat";
 
 const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
@@ -562,25 +563,21 @@ const WorkspaceDetail = () => {
                                         onClick={async () => {
                                           if (selectedMember) {
                                             try {
-                                              const response = await fetch(`http://localhost:5000/api/project/add-projectmember/${selectedProject._id}`, {
-                                                method: 'POST',
-                                                headers: {
-                                                  'Content-Type': 'application/json',
-                                                  'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                                },
-                                                body: JSON.stringify({
-                                                  userId: selectedMember,
-                                                  role: 'member'
-                                                })
-                                              });
-                                              const result = await response.json();
-                                              console.log('Member added:', result);
+                                              const result = await dispatch(addProjectMember({
+                                                projectId: selectedProject._id,
+                                                userId: selectedMember,
+                                                role: 'member'
+                                              })).unwrap();
+                                              
                                               setSelectedMember('');
                                               setShowAddMemberDropdown(false);
-                                              // Refresh project data
-                                              dispatch(getAllProjects({ workspaceId }));
+                                              setSelectedProject(result.project);
+                                              // No need to call getAllProjects as the slice updates the state
+                                              // But if we want to ensure everything is in sync:
+                                              // dispatch(getAllProjects({ workspaceId }));
                                             } catch (error) {
                                               console.error('Failed to add member:', error);
+                                              alert(error.message || 'Failed to add member');
                                             }
                                           }
                                         }}
@@ -660,10 +657,7 @@ const WorkspaceDetail = () => {
                         />
                       )}
                       {projectView === "chat" && (
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Chat</h2>
-                          <p className="text-gray-600">Chat functionality coming soon...</p>
-                        </div>
+                        <Chat workspaceId={workspaceId} projectId={selectedProject?._id} />
                       )}
                       {projectView === "calendar" && (
                         <div className="bg-white rounded-xl shadow-sm p-6">
