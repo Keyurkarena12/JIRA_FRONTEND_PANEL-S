@@ -20,6 +20,23 @@ export const getOrCreateChat = createAsyncThunk(
   }
 );
 
+export const getOrCreateProjectChat = createAsyncThunk(
+  "chat/getOrCreateProjectChat",
+  async (projectId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/chat/project/${projectId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const fetchMessages = createAsyncThunk(
   "chat/fetchMessages",
   async (roomId, { rejectWithValue }) => {
@@ -75,6 +92,17 @@ const chatSlice = createSlice({
         state.currentRoom = action.payload;
       })
       .addCase(getOrCreateChat.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(getOrCreateProjectChat.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getOrCreateProjectChat.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRoom = action.payload;
+      })
+      .addCase(getOrCreateProjectChat.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

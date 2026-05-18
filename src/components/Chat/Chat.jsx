@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../../utils/socket';
-import { addMessage, fetchMessages, getOrCreateChat, setTyping, removeTyping } from '../../features/ChatSlice';
+import { addMessage, fetchMessages, getOrCreateChat, getOrCreateProjectChat, setTyping, removeTyping } from '../../features/ChatSlice';
 
 const Chat = ({ workspaceId, projectId }) => {
   const [message, setMessage] = useState('');
@@ -15,10 +15,12 @@ const Chat = ({ workspaceId, projectId }) => {
   };
 
   useEffect(() => {
-    if (workspaceId) {
+    if (projectId) {
+      dispatch(getOrCreateProjectChat(projectId));
+    } else if (workspaceId) {
       dispatch(getOrCreateChat(workspaceId));
     }
-  }, [workspaceId, dispatch]);
+  }, [workspaceId, projectId, dispatch]);
 
   useEffect(() => {
     if (currentRoom) {
