@@ -591,43 +591,6 @@ const WorkspaceDetail = () => {
                                 </div>
                               )}
                             </div>
-                            <button
-                              onClick={async () => {
-                                try {
-                                  const response = await fetch(`http://localhost:5000/api/project/task/${selectedProject._id}`, {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                    },
-                                    body: JSON.stringify({
-                                      title: 'Test Task',
-                                      description: 'This is a test task',
-                                      column: 'to do',
-                                      priority: 'medium',
-                                      dueDate: null
-                                    })
-                                  });
-                                  const result = await response.json();
-                                  console.log('Test task created:', result);
-                                  // Refresh tasks
-                                  dispatch(fetchprojectTask(selectedProject._id));
-                                } catch (error) {
-                                  console.error('Failed to create test task:', error);
-                                }
-                              }}
-                              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                            >
-                              Create Test Task
-                            </button>
-                            <button
-                              onClick={() => setSelectedProject(null)}
-                              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
                           </div>
                         </div>
                       </div>

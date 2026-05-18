@@ -126,14 +126,22 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
         <p className="text-sm text-gray-500 mb-3 line-clamp-2">{task.description}</p>
       )}
       <div className="flex items-center justify-between mt-2">
-        {task.assignee ? (
-          <div className="flex items-center gap-1.5">
-            <img
-              src={`https://ui-avatars.com/api/?name=${task.assignee.name || task.assignee}&background=6366f1&color=fff&size=24`}
-              alt={task.assignee.name || task.assignee}
-              className="w-6 h-6 rounded-full"
-            />
-            <span className="text-xs text-gray-600">{task.assignee.name || task.assignee}</span>
+        {task.assignees && task.assignees.length > 0 ? (
+          <div className="flex items-center -space-x-2">
+            {task.assignees.slice(0, 3).map((assignee, index) => (
+              <img
+                key={assignee._id || index}
+                src={`https://ui-avatars.com/api/?name=${assignee.name || 'U'}&background=6366f1&color=fff&size=24`}
+                alt={assignee.name || 'User'}
+                title={assignee.name}
+                className="w-6 h-6 rounded-full border border-white"
+              />
+            ))}
+            {task.assignees.length > 3 && (
+              <div className="w-6 h-6 rounded-full border border-white bg-gray-100 flex items-center justify-center z-10 text-[10px] font-medium text-gray-600">
+                +{task.assignees.length - 3}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-1.5 text-gray-400">

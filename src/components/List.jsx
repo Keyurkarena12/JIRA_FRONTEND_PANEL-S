@@ -108,19 +108,26 @@ const List = ({
                       <button
                         onClick={() => {
                           setShowAssigneeDropdown(showAssigneeDropdown === task._id ? null : task._id);
-                          setSelectedAssignee(task.assignee?._id || '');
                         }}
-                        className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded transition-colors"
+                        className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded transition-colors"
                       >
-                        {task.assignee ? (
-                          <>
-                            <img
-                              src={`https://ui-avatars.com/api/?name=${task.assignee.name || task.assignee}&background=6366f1&color=fff&size=24`}
-                              alt={task.assignee.name || task.assignee}
-                              className="w-6 h-6 rounded-full"
-                            />
-                            <span className="text-sm text-gray-700">{task.assignee.name || task.assignee}</span>
-                          </>
+                        {task.assignees && task.assignees.length > 0 ? (
+                          <div className="flex items-center -space-x-2">
+                            {task.assignees.slice(0, 3).map((assignee, index) => (
+                              <img
+                                key={assignee._id || index}
+                                src={`https://ui-avatars.com/api/?name=${assignee.name || 'U'}&background=6366f1&color=fff&size=24`}
+                                alt={assignee.name || 'User'}
+                                title={assignee.name}
+                                className="w-6 h-6 rounded-full border border-white relative z-0 hover:z-10"
+                              />
+                            ))}
+                            {task.assignees.length > 3 && (
+                              <div className="w-6 h-6 rounded-full border border-white bg-gray-100 flex items-center justify-center z-10 text-[10px] font-medium text-gray-600">
+                                +{task.assignees.length - 3}
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <>
                             <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
@@ -128,10 +135,10 @@ const List = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                               </svg>
                             </div>
-                            <span className="text-sm text-gray-500">Unassigned</span>
+                            <span className="text-sm text-gray-500 ml-1">Unassigned</span>
                           </>
                         )}
-                        <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
@@ -140,45 +147,41 @@ const List = ({
                         <div className="absolute left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                           <div className="p-3">
                             <h4 className="text-sm font-medium text-gray-900 mb-2">Assign Task</h4>
-                            <select
-                              value={selectedAssignee}
-                              onChange={(e) => setSelectedAssignee(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-                            >
-                              <option value="">Unassigned</option>
-                              {selectedProject?.members?.map((member) => (
-                                <option key={member.user._id} value={member.user._id}>
-                                  {member.user.name || member.user.email}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="flex gap-2">
+                            <div className="max-h-48 overflow-y-auto space-y-1">
+                              {selectedProject?.members?.map((member) => {
+                                const isAssigned = task.assignees?.some(a => a._id === member.user._id);
+                                return (
+                                  <button
+                                    key={member.user._id}
+                                    onClick={async () => {
+                                      try {
+                                        await dispatch(assigneeTaskMember({
+                                          taskId: task._id,
+                                          memberId: member.user._id
+                                        })).unwrap();
+                                        dispatch(fetchprojectTask(selectedProject._id));
+                                      } catch (error) {
+                                        console.error('Failed to assign task:', error);
+                                      }
+                                    }}
+                                    className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded text-sm text-left"
+                                  >
+                                    <span>{member.user.name || member.user.email}</span>
+                                    {isAssigned && (
+                                      <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-gray-100">
                               <button
-                                onClick={() => {
-                                  setShowAssigneeDropdown(null);
-                                  setSelectedAssignee('');
-                                }}
-                                className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                                onClick={() => setShowAssigneeDropdown(null)}
+                                className="w-full px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded text-sm transition-colors text-center"
                               >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    await dispatch(assigneeTaskMember({
-                                      taskId: task._id,
-                                      memberId: selectedAssignee || null
-                                    })).unwrap();
-                                    setShowAssigneeDropdown(null);
-                                    setSelectedAssignee('');
-                                    dispatch(fetchprojectTask(selectedProject._id));
-                                  } catch (error) {
-                                    console.error('Failed to assign task:', error);
-                                  }
-                                }}
-                                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700"
-                              >
-                                Assign
+                                Done
                               </button>
                             </div>
                           </div>
