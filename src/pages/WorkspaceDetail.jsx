@@ -12,6 +12,11 @@ import Chat from "../components/Chat/Chat";
 import Calendar from "../components/Calendar";
 import Timeline from "../components/Timeline";
 
+import ChatList from "../components/Chat/ChatList";
+import DirectChat from "../components/Chat/DirectChat";
+
+
+
 const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
   const dispatch = useDispatch();
@@ -27,6 +32,9 @@ const WorkspaceDetail = () => {
   const [selectedAssignee, setSelectedAssignee] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
+
+  const [directChatUser, setDirectChatUser] = useState(null);
+
 
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editProjectFormData, setEditProjectFormData] = useState({ name: '', description: '' });
@@ -315,8 +323,9 @@ const WorkspaceDetail = () => {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className={`flex-1 p-6 ${sidebarOpen ? 'ml-80' : 'ml-16'} transition-all duration-200`}>
-          <div className="max-w-6xl mx-auto">
+        <div className={`flex-1 flex ${sidebarOpen ? 'ml-80' : 'ml-16'} transition-all duration-200 h-[calc(100vh-4rem)]`}>
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto">
             {/* Breadcrumb */}
             {selectedProject && (
               <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
@@ -643,6 +652,14 @@ const WorkspaceDetail = () => {
             </div>
 
           </div>
+          </div>
+          {/* Right Sidebar for Project Members / Direct Chat */}
+          {activeTab === "projects" && selectedProject && (
+            <ChatList 
+              members={workspace?.members} 
+              onSelectMember={(u) => setDirectChatUser(u)} 
+            />
+          )}
         </div>
 
         {/* Mobile Sidebar Overlay */}
@@ -650,6 +667,14 @@ const WorkspaceDetail = () => {
           <div
             className="fixed inset-0 bg-black/50 z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Direct Chat Popup */}
+        {directChatUser && (
+          <DirectChat 
+            targetUser={directChatUser} 
+            onClose={() => setDirectChatUser(null)} 
           />
         )}
       </div>
