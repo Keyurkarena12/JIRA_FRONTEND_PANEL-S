@@ -11,8 +11,11 @@ import List from "../components/List";
 import Chat from "../components/Chat/Chat";
 import Calendar from "../components/Calendar";
 import Timeline from "../components/Timeline";
+
 import ChatList from "../components/Chat/ChatList";
 import DirectChat from "../components/Chat/DirectChat";
+
+
 
 const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
@@ -29,7 +32,9 @@ const WorkspaceDetail = () => {
   const [selectedAssignee, setSelectedAssignee] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
+
   const [directChatUser, setDirectChatUser] = useState(null);
+
 
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editProjectFormData, setEditProjectFormData] = useState({ name: '', description: '' });
