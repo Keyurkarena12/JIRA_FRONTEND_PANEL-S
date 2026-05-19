@@ -70,6 +70,16 @@ export const moveTask = createAsyncThunk("task/move", async({ taskId, column }) 
     return response.data;
 });
 
+export const addTaskComment = createAsyncThunk("task/addComment", async({ taskId, text }) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${TASK_API}/comments/${taskId}`, {
+        text
+    }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
+});
+
 const taskSlice = createSlice({
     name: "task",
     initialState: {
@@ -206,6 +216,24 @@ const taskSlice = createSlice({
                 state.error = null;
             })
             .addCase(deleteTask.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+
+            .addCase(addTaskComment.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(addTaskComment.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                const updated = action.payload.task;
+                const idx = state.tasks.findIndex(t => t._id === updated._id);
+                if (idx !== -1) state.tasks[idx] = updated;
+                state.task = updated;
+                state.error = null;
+            })
+            .addCase(addTaskComment.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
