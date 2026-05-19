@@ -37,6 +37,40 @@ export const getOrCreateProjectChat = createAsyncThunk(
   }
 );
 
+export const getOrCreateDirectChatThunk = createAsyncThunk(
+  "chat/getOrCreateDirectChat",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/chat/direct/${userId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const getDirectConversationsThunk = createAsyncThunk(
+  "chat/getDirectConversations",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/chat/direct/conversations`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const fetchMessages = createAsyncThunk(
   "chat/fetchMessages",
   async (roomId, { rejectWithValue }) => {
@@ -59,6 +93,7 @@ const chatSlice = createSlice({
   initialState: {
     currentRoom: null,
     messages: [],
+    directConversations: [],
     loading: false,
     error: null,
     typingUsers: []
@@ -80,6 +115,9 @@ const chatSlice = createSlice({
     clearChat: (state) => {
       state.currentRoom = null;
       state.messages = [];
+    },
+    setCurrentRoom: (state, action) => {
+      state.currentRoom = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -106,11 +144,25 @@ const chatSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(getOrCreateDirectChatThunk.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getOrCreateDirectChatThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRoom = action.payload;
+      })
+      .addCase(getOrCreateDirectChatThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(getDirectConversationsThunk.fulfilled, (state, action) => {
+        state.directConversations = action.payload;
+      })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.messages = action.payload;
       });
   }
 });
 
-export const { addMessage, setTyping, removeTyping, clearChat } = chatSlice.actions;
+export const { addMessage, setTyping, removeTyping, clearChat, setCurrentRoom } = chatSlice.actions;
 export default chatSlice.reducer;
