@@ -559,7 +559,7 @@ const WorkspaceDetail = () => {
                                                 projectId: selectedProject._id,
                                                 userId: selectedMember,
                                                 role: 'member'
-                                              })).unwrap();
+                                              })).unwrap();   
 
                                               setSelectedMember('');
                                               setShowAddMemberDropdown(false);

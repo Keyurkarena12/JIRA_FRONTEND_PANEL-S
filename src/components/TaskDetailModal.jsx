@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getTaskById, updateTask, deleteTask, assigneeTaskMember, fetchprojectTask, clearSelectedTask } from '../features/TaskSlice';
+import { getTaskById, updateTask, deleteTask, assigneeTaskMember, fetchprojectTask, clearSelectedTask, addTaskComment } from '../features/TaskSlice';
 
 const PRIORITY_OPTIONS = ['urgent', 'high', 'medium', 'low', 'none'];
 const COLUMN_OPTIONS = ['to do', 'in progress', 'complete'];
@@ -36,6 +36,9 @@ const TaskDetailModal = ({ taskId, onClose, selectedProject, workspaceMembers })
   const [saveError, setSaveError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   // Fetch task on mount
   useEffect(() => {
@@ -84,6 +87,21 @@ const TaskDetailModal = ({ taskId, onClose, selectedProject, workspaceMembers })
       console.error('Delete failed:', err);
       setDeleting(false);
       setConfirmDelete(false);
+    }
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setSubmittingComment(true);
+    try {
+      await dispatch(addTaskComment({ taskId: task._id, text: newComment.trim() })).unwrap();
+      setNewComment('');
+    } catch (err) {
+      console.error('Failed to add comment:', err);
+      // Optional: set a local error state for comments
+    } finally {
+      setSubmittingComment(false);
     }
   };
 
@@ -244,6 +262,58 @@ const TaskDetailModal = ({ taskId, onClose, selectedProject, workspaceMembers })
                   <span className="ml-3">Updated: {new Date(task.updatedAt).toLocaleString()}</span>
                 )}
               </div>
+
+              {/* Comments Section */}
+              <div className="pt-6 border-t border-gray-100">
+                <h3 className="text-sm font-bold text-gray-800 mb-4">Comments</h3>
+                
+                {/* Existing Comments */}
+                {task.comments && task.comments.length > 0 ? (
+                  <div className="space-y-4 mb-6">
+                    {task.comments.map((comment, index) => (
+                      <div key={index} className="flex gap-3">
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${comment.user?.name || 'U'}&background=6366f1&color=fff&size=32`}
+                          alt={comment.user?.name}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div className="flex-1 bg-gray-50 rounded-lg p-3">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-semibold text-gray-800">{comment.user?.name || 'Unknown'}</span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(comment.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic mb-6">No comments yet.</div>
+                )}
+
+                {/* Add Comment Form */}
+                <form onSubmit={handleAddComment} className="flex flex-col gap-2">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment..."
+                    rows={2}
+                    className="w-full text-sm text-gray-700 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none"
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={submittingComment || !newComment.trim()}
+                      className="px-4 py-1.5 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition disabled:opacity-50"
+                    >
+                      {submittingComment ? 'Adding...' : 'Add Comment'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
             </div>
 
             {/* Right — metadata sidebar */}
