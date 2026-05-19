@@ -9,6 +9,8 @@ import SubNavbar from "../components/SubNavbar";
 import KanbanBoard from "../components/KanbanBoard";
 import List from "../components/List";
 import Chat from "../components/Chat/Chat";
+import Calendar from "../components/Calendar";
+import Timeline from "../components/Timeline";
 
 const WorkspaceDetail = () => {
   const { workspaceId } = useParams();
@@ -25,7 +27,7 @@ const WorkspaceDetail = () => {
   const [selectedAssignee, setSelectedAssignee] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
-  
+
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editProjectFormData, setEditProjectFormData] = useState({ name: '', description: '' });
 
@@ -33,7 +35,7 @@ const WorkspaceDetail = () => {
   const { projects } = useSelector((state) => state.project);
   const { tasks, loading: taskLoading } = useSelector((state) => state.task);
 
-  console.log("workspacedetail page",workspace)
+  console.log("workspacedetail page", workspace)
   console.log("tasks state:", tasks)
 
   useEffect(() => {
@@ -50,9 +52,9 @@ const WorkspaceDetail = () => {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
       // Clear activeTab from state
-      navigate(location.pathname, { 
-        replace: true, 
-        state: { ...location.state, activeTab: undefined } 
+      navigate(location.pathname, {
+        replace: true,
+        state: { ...location.state, activeTab: undefined }
       });
     }
   }, [location.state?.activeTab, navigate, location.pathname]);
@@ -63,9 +65,9 @@ const WorkspaceDetail = () => {
       if (proj) {
         setSelectedProject(proj);
         // Clear the state so we don't get stuck if user clears the selection
-        navigate(location.pathname, { 
-          replace: true, 
-          state: { ...location.state, projectId: undefined } 
+        navigate(location.pathname, {
+          replace: true,
+          state: { ...location.state, projectId: undefined }
         });
       }
     }
@@ -106,7 +108,7 @@ const WorkspaceDetail = () => {
       })).unwrap();
       setIsEditingProject(false);
       // Let the selector update the selectedProject view on its own? Actually we might need to manually update it or rely on the state changing if it does
-      setSelectedProject(prev => ({...prev, name: editProjectFormData.name, description: editProjectFormData.description}));
+      setSelectedProject(prev => ({ ...prev, name: editProjectFormData.name, description: editProjectFormData.description }));
     } catch (error) {
       console.error('Failed to update project:', error);
       alert('Failed to update project');
@@ -163,15 +165,13 @@ const WorkspaceDetail = () => {
         <div className="fixed z-30 w-16 h-[calc(100vh-4rem)] bg-[#2E1A47] transition-transform duration-300 overflow-y-auto flex flex-col">
           <div className="p-3 border-b border-white/10">
             <div
-              className={`relative overflow-hidden transition-all duration-300 ${
-                sidebarOpen ? "h-10" : "h-24"
-              }`}
+              className={`relative overflow-hidden transition-all duration-300 ${sidebarOpen ? "h-10" : "h-24"
+                }`}
             >
               {/* Toggle takes top slot when collapsed */}
               <div
-                className={`absolute left-0 right-0 flex justify-center transition-all duration-300 ${
-                  sidebarOpen ? "top-8 opacity-0 pointer-events-none" : "top-0 opacity-100"
-                }`}
+                className={`absolute left-0 right-0 flex justify-center transition-all duration-300 ${sidebarOpen ? "top-8 opacity-0 pointer-events-none" : "top-0 opacity-100"
+                  }`}
               >
                 <button
                   onClick={() => setSidebarOpen(true)}
@@ -187,9 +187,8 @@ const WorkspaceDetail = () => {
 
               {/* Logo shifts down when collapsed */}
               <div
-                className={`absolute left-0 right-0 flex justify-center transition-all duration-300 ${
-                  sidebarOpen ? "top-0" : "top-12"
-                }`}
+                className={`absolute left-0 right-0 flex justify-center transition-all duration-300 ${sidebarOpen ? "top-0" : "top-12"
+                  }`}
               >
                 <div className="w-10 h-10 bg-white/10 rounded flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,11 +202,10 @@ const WorkspaceDetail = () => {
             <div className="space-y-0.5">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "overview"
-                    ? "bg-white/20 text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
+                  ? "bg-white/20 text-white"
+                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -215,11 +213,10 @@ const WorkspaceDetail = () => {
               </button>
               <button
                 onClick={() => setActiveTab("members")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "members"
-                    ? "bg-white/20 text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
+                  ? "bg-white/20 text-white"
+                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -227,11 +224,10 @@ const WorkspaceDetail = () => {
               </button>
               <button
                 onClick={() => setActiveTab("projects")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "projects"
-                    ? "bg-white/20 text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
+                  ? "bg-white/20 text-white"
+                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -246,7 +242,7 @@ const WorkspaceDetail = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-gray-900">{workspace?.name || 'Workspace'}</h2>
-              <button 
+              <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-1 hover:bg-gray-100 rounded"
                 aria-label="Close sidebar"
@@ -257,7 +253,7 @@ const WorkspaceDetail = () => {
                 </svg>
               </button>
             </div>
-            
+
           </div>
 
           {/* Navigation Menu */}
@@ -265,11 +261,10 @@ const WorkspaceDetail = () => {
             <div className="space-y-0.5">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "overview"
-                    ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
+                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -279,11 +274,10 @@ const WorkspaceDetail = () => {
 
               <button
                 onClick={() => setActiveTab("members")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "members"
-                    ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
+                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -294,11 +288,10 @@ const WorkspaceDetail = () => {
 
               <button
                 onClick={() => setActiveTab("projects")}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${
-                  activeTab === "projects"
-                    ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
+                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -306,7 +299,7 @@ const WorkspaceDetail = () => {
                 <span>Projects</span>
               </button>
 
-              </div>
+            </div>
           </nav>
 
           {/* Favorites Section */}
@@ -340,7 +333,7 @@ const WorkspaceDetail = () => {
                 <span className="text-gray-900 font-medium">{selectedProject.name}</span>
               </nav>
             )}
-            
+
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
@@ -352,9 +345,9 @@ const WorkspaceDetail = () => {
                     {activeTab === "projects" && selectedProject && selectedProject.name}
                   </h1>
                 </div>
-                
+
                 {activeTab === "members" && (
-                  <Link 
+                  <Link
                     to={`/workspace/${workspaceId}/add-members`}
                     className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2"
                   >
@@ -366,7 +359,7 @@ const WorkspaceDetail = () => {
                 )}
 
                 {activeTab === "projects" && !selectedProject && (
-                  <Link 
+                  <Link
                     to={`/workspace/${workspaceId}/create-project`}
                     className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2"
                   >
@@ -406,8 +399,8 @@ const WorkspaceDetail = () => {
                   {workspace?.members?.length > 0 ? (
                     <div className="space-y-3">
                       {workspace.members.map((member, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                         >
                           <div className="flex items-center gap-3">
@@ -450,11 +443,10 @@ const WorkspaceDetail = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                   </svg>
                                 </div>
-                                <span className={`px-2 py-0.5 text-xs rounded-full ${
-                                  project.status === 'active' 
-                                    ? 'bg-green-100 text-green-700' 
-                                    : 'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${project.status === 'active'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {project.status}
                                 </span>
                               </div>
@@ -532,7 +524,7 @@ const WorkspaceDetail = () => {
                                 </svg>
                                 Add Member
                               </button>
-                              
+
                               {showAddMemberDropdown && (
                                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                                   <div className="p-4">
@@ -568,7 +560,7 @@ const WorkspaceDetail = () => {
                                                 userId: selectedMember,
                                                 role: 'member'
                                               })).unwrap();
-                                              
+
                                               setSelectedMember('');
                                               setShowAddMemberDropdown(false);
                                               setSelectedProject(result.project);
@@ -600,7 +592,7 @@ const WorkspaceDetail = () => {
 
                       {/* Project Content Based on View */}
                       {projectView === "list" && (
-                        <List 
+                        <List
                           tasks={tasks}
                           taskLoading={taskLoading}
                           selectedProject={selectedProject}
@@ -612,9 +604,9 @@ const WorkspaceDetail = () => {
                         />
                       )}
                       {projectView === "board" && (
-                        <KanbanBoard 
-                          tasks={tasks} 
-                          loading={taskLoading} 
+                        <KanbanBoard
+                          tasks={tasks}
+                          loading={taskLoading}
                           selectedProject={selectedProject}
                           workspaceMembers={workspace?.members}
                         />
@@ -623,16 +615,20 @@ const WorkspaceDetail = () => {
                         <Chat workspaceId={workspaceId} projectId={selectedProject?._id} />
                       )}
                       {projectView === "calendar" && (
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-4">Calendar View</h2>
-                          <p className="text-gray-600">Calendar functionality coming soon...</p>
-                        </div>
+                        <Calendar
+                          tasks={tasks}
+                          taskLoading={taskLoading}
+                          selectedProject={selectedProject}
+                          workspaceMembers={workspace?.members}
+                        />
                       )}
                       {projectView === "timeline" && (
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-4">Timeline View</h2>
-                          <p className="text-gray-600">Timeline functionality coming soon...</p>
-                        </div>
+                        <Timeline
+                          tasks={tasks}
+                          taskLoading={taskLoading}
+                          selectedProject={selectedProject}
+                          workspaceMembers={workspace?.members}
+                        />
                       )}
                     </div>
                   )}
@@ -645,7 +641,7 @@ const WorkspaceDetail = () => {
                 </div>
               )}
             </div>
-    
+
           </div>
         </div>
 
@@ -664,7 +660,7 @@ const WorkspaceDetail = () => {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Edit Project</h2>
-              <button 
+              <button
                 onClick={() => setIsEditingProject(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
@@ -673,25 +669,25 @@ const WorkspaceDetail = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleUpdateProjectSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
                 <input
                   type="text"
                   value={editProjectFormData.name}
-                  onChange={(e) => setEditProjectFormData({...editProjectFormData, name: e.target.value})}
+                  onChange={(e) => setEditProjectFormData({ ...editProjectFormData, name: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                   placeholder="Enter project name"
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={editProjectFormData.description}
-                  onChange={(e) => setEditProjectFormData({...editProjectFormData, description: e.target.value})}
+                  onChange={(e) => setEditProjectFormData({ ...editProjectFormData, description: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none h-24"
                   placeholder="Enter project description"
                 />
@@ -722,3 +718,5 @@ const WorkspaceDetail = () => {
 };
 
 export default WorkspaceDetail;
+
+
