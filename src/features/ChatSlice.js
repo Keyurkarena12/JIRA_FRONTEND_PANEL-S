@@ -37,16 +37,45 @@ export const getOrCreateProjectChat = createAsyncThunk(
   }
 );
 
-export const getOrCreateDirectChatThunk = createAsyncThunk(
-  "chat/getOrCreateDirectChat",
-  async (userId, { rejectWithValue }) => {
+export const getDirectChatThunk = createAsyncThunk(
+  "chat/getDirectChat",
+  async (payload, { rejectWithValue }) => {
     try {
+      const userId = typeof payload === 'string' ? payload : payload?.userId;
+      const workspaceId = typeof payload === 'string' ? null : payload?.workspaceId;
+      const projectId = typeof payload === 'string' ? null : payload?.projectId;
+
+      const params = {};
+      if (workspaceId) params.workspaceId = workspaceId;
+      if (projectId) params.projectId = projectId;
+
       const response = await axios.get(`${API_URL}/chat/direct/${userId}`, {
+        params,
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const createDirectChatThunk = createAsyncThunk(
+  "chat/createDirectChat",
+  async ({ userId, workspaceId, projectId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/chat/direct`, 
+        { userId, workspaceId, projectId },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -144,14 +173,25 @@ const chatSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(getOrCreateDirectChatThunk.pending, (state) => {
+      .addCase(getDirectChatThunk.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getOrCreateDirectChatThunk.fulfilled, (state, action) => {
+      .addCase(getDirectChatThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.currentRoom = action.payload;
       })
-      .addCase(getOrCreateDirectChatThunk.rejected, (state, action) => {
+      .addCase(getDirectChatThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(createDirectChatThunk.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createDirectChatThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRoom = action.payload;
+      })
+      .addCase(createDirectChatThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
