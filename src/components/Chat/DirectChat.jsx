@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../../utils/socket';
-import { addMessage, fetchMessages, getOrCreateDirectChatThunk, setTyping, removeTyping } from '../../features/ChatSlice';
+import { addMessage, fetchMessages, getDirectChatThunk, createDirectChatThunk, setTyping, removeTyping } from '../../features/ChatSlice';
 
-const DirectChat = ({ targetUser, onClose }) => {
+const DirectChat = ({ targetUser, onClose, chatListOpen, workspaceId, projectId }) => {
   const [message, setMessage] = useState('');
   const dispatch = useDispatch();
   const { currentRoom, messages, typingUsers } = useSelector((state) => state.chat);
@@ -16,9 +16,9 @@ const DirectChat = ({ targetUser, onClose }) => {
 
   useEffect(() => {
     if (targetUser) {
-      dispatch(getOrCreateDirectChatThunk(targetUser._id));
+      dispatch(getDirectChatThunk({ userId: targetUser._id, workspaceId, projectId }));
     }
-  }, [targetUser, dispatch]);
+  }, [targetUser, workspaceId, projectId, dispatch]);
 
   useEffect(() => {
     if (currentRoom && currentRoom.type === 'private') {
@@ -53,19 +53,43 @@ const DirectChat = ({ targetUser, onClose }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (message.trim() && currentRoom) {
-      const messageData = {
-        chatRoomId: currentRoom._id,
-        senderId: user._id,
-        content: message.trim(),
-        type: 'text'
-      };
+    if (message.trim()) {
+      let activeRoom = currentRoom;
+      const isNewRoom = !activeRoom;
 
-      socket.emit('send_message', messageData);
-      socket.emit('stop_typing', { roomId: currentRoom._id, userId: user._id });
-      setMessage('');
+      if (isNewRoom) {
+        try {
+          const result = await dispatch(createDirectChatThunk({ 
+            userId: targetUser._id, 
+            workspaceId, 
+            projectId 
+          })).unwrap();
+          activeRoom = result;
+        } catch (err) {
+          console.error("Failed to create chat room:", err);
+          return;
+        }
+      }
+
+      if (activeRoom) {
+        if (isNewRoom) {
+          socket.connect();
+          socket.emit('join_room', { roomId: activeRoom._id, userId: user._id });
+        }
+
+        const messageData = {
+          chatRoomId: activeRoom._id,
+          senderId: user._id,
+          content: message.trim(),
+          type: 'text'
+        };
+
+        socket.emit('send_message', messageData);
+        socket.emit('stop_typing', { roomId: activeRoom._id, userId: user._id });
+        setMessage('');
+      }
     }
   };
 
@@ -85,7 +109,7 @@ const DirectChat = ({ targetUser, onClose }) => {
   };
 
   return (
-    <div className="fixed bottom-0 right-[260px] w-80 bg-white rounded-t-xl shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden flex flex-col z-40" style={{ height: '400px' }}>
+    <div className={`fixed bottom-0 ${chatListOpen ? 'right-[270px]' : 'right-24'} w-80 bg-white rounded-t-xl shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden flex flex-col z-45 transition-all duration-300`} style={{ height: '400px' }}>
       <div className="px-4 py-3 bg-[#0052CC] text-white flex items-center justify-between">
         <div className="flex items-center gap-2">
            <img
