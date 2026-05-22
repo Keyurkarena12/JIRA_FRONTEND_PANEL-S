@@ -22,7 +22,18 @@ const WorkspaceDetail = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e) => {
+      if (e.matches) setSidebarOpen(true);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [projectView, setProjectView] = useState("list");
@@ -151,6 +162,12 @@ const WorkspaceDetail = () => {
     setDragOverColumn(null);
   };
 
+  const closeSidebarOnMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
   const updateTaskColumn = async (taskId, newColumn) => {
     try {
       await dispatch(moveTask({ taskId, column: newColumn })).unwrap();
@@ -170,8 +187,8 @@ const WorkspaceDetail = () => {
   return (
     <div className="min-h-screen bg-[#F9FAFB] pt-16">
       <div className="flex">
-        {/* ICON SIDEBAR - Dark */}
-        <div className="fixed z-30 w-16 h-[calc(100vh-4rem)] bg-[#2E1A47] transition-transform duration-300 overflow-y-auto flex flex-col">
+        {/* ICON SIDEBAR - Dark (tablet+) */}
+        <div className="hidden md:flex fixed z-30 w-16 h-[calc(100vh-4rem)] bg-[#2E1A47] transition-transform duration-300 overflow-y-auto flex-col">
           <div className="p-3 border-b border-white/10">
             <div
               className={`relative overflow-hidden transition-all duration-300 ${sidebarOpen ? "h-10" : "h-24"
@@ -210,7 +227,7 @@ const WorkspaceDetail = () => {
           <nav className="p-3">
             <div className="space-y-0.5">
               <button
-                onClick={() => setActiveTab("overview")}
+                onClick={() => { setActiveTab("overview"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
                   ? "bg-white/20 text-white"
                   : "text-white/80 hover:bg-white/10 hover:text-white"
@@ -221,7 +238,7 @@ const WorkspaceDetail = () => {
                 </svg>
               </button>
               <button
-                onClick={() => setActiveTab("members")}
+                onClick={() => { setActiveTab("members"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
                   ? "bg-white/20 text-white"
                   : "text-white/80 hover:bg-white/10 hover:text-white"
@@ -232,7 +249,7 @@ const WorkspaceDetail = () => {
                 </svg>
               </button>
               <button
-                onClick={() => setActiveTab("projects")}
+                onClick={() => { setActiveTab("projects"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
                   ? "bg-white/20 text-white"
                   : "text-white/80 hover:bg-white/10 hover:text-white"
@@ -246,7 +263,11 @@ const WorkspaceDetail = () => {
           </nav>
         </div>
         {/* NAVIGATION SIDEBAR - Light */}
-        <div className={`${sidebarOpen ? 'translate-x-16' : '-translate-x-full'} fixed z-30 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-transform duration-200 overflow-y-auto`}>
+        <div
+          className={`fixed z-40 w-[min(100vw-3rem,16rem)] sm:w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-transform duration-200 overflow-y-auto shadow-lg md:shadow-none left-0 ${
+            sidebarOpen ? 'translate-x-0 md:translate-x-16' : '-translate-x-full'
+          }`}
+        >
           {/* Workspace Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -269,7 +290,7 @@ const WorkspaceDetail = () => {
           <nav className="p-3">
             <div className="space-y-0.5">
               <button
-                onClick={() => setActiveTab("overview")}
+                onClick={() => { setActiveTab("overview"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
                   ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
                   : "text-gray-700 hover:bg-gray-50"
@@ -282,7 +303,7 @@ const WorkspaceDetail = () => {
               </button>
 
               <button
-                onClick={() => setActiveTab("members")}
+                onClick={() => { setActiveTab("members"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
                   ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
                   : "text-gray-700 hover:bg-gray-50"
@@ -296,7 +317,7 @@ const WorkspaceDetail = () => {
               </button>
 
               <button
-                onClick={() => setActiveTab("projects")}
+                onClick={() => { setActiveTab("projects"); closeSidebarOnMobile(); }}
                 className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
                   ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
                   : "text-gray-700 hover:bg-gray-50"
@@ -324,31 +345,47 @@ const WorkspaceDetail = () => {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className={`flex-1 flex ${sidebarOpen ? 'ml-80' : 'ml-16'} transition-all duration-200 h-[calc(100vh-4rem)]`}>
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-6xl mx-auto">
-            {/* Breadcrumb */}
-            {selectedProject && (
-              <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-                <button
-                  onClick={() => setSelectedProject(null)}
-                  className="hover:text-blue-600 transition-colors font-medium flex items-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Projects
-                </button>
-                <span className="text-gray-400">/</span>
-                <span className="text-gray-900 font-medium">{selectedProject.name}</span>
-              </nav>
-            )}
+        <div
+          className={`flex-1 flex min-w-0 w-full transition-all duration-200 h-[calc(100vh-4rem)] ml-0 ${
+            sidebarOpen ? 'lg:ml-80' : 'md:ml-16'
+          }`}
+        >
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
+            <div className="max-w-6xl mx-auto w-full min-w-0">
+            {/* Mobile menu + Breadcrumb */}
+            <div className="flex items-center gap-3 mb-4 md:mb-0">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden shrink-0 p-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                aria-label="Open menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              {selectedProject && (
+                <nav className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm text-gray-600 min-w-0 flex-1">
+                  <button
+                    onClick={() => setSelectedProject(null)}
+                    className="hover:text-blue-600 transition-colors font-medium flex items-center gap-1 shrink-0"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Projects
+                  </button>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-900 font-medium truncate">{selectedProject.name}</span>
+                </nav>
+              )}
+            </div>
 
             {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-semibold text-[#172B4D]">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-semibold text-[#172B4D] truncate">
                     {activeTab === "overview" && "Workspace Overview"}
                     {activeTab === "members" && "Team Members"}
                     {activeTab === "projects" && !selectedProject && "Projects"}
@@ -359,7 +396,7 @@ const WorkspaceDetail = () => {
                 {activeTab === "members" && (
                   <Link
                     to={`/workspace/${workspaceId}/add-members`}
-                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2"
+                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -371,7 +408,7 @@ const WorkspaceDetail = () => {
                 {activeTab === "projects" && !selectedProject && (
                   <Link
                     to={`/workspace/${workspaceId}/create-project`}
-                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2"
+                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -385,7 +422,7 @@ const WorkspaceDetail = () => {
             {/* Content Area */}
             <div>
               {activeTab === "overview" && (
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Workspace Details</h2>
                   <div className="space-y-4">
                     <div>
@@ -404,16 +441,16 @@ const WorkspaceDetail = () => {
                 </div>
               )}
               {activeTab === "members" && (
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Members</h2>
                   {workspace?.members?.length > 0 ? (
                     <div className="space-y-3">
                       {workspace.members.map((member, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
                             <img
                               src={`https://ui-avatars.com/api/?name=${member.user?.name || member.user?.email || 'User'}&background=6366f1&color=fff&size=40`}
                               alt={member.user?.name || 'User'}
@@ -440,7 +477,7 @@ const WorkspaceDetail = () => {
                   {!selectedProject ? (
                     <>
                       {projects && projects.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                           {projects.map((project) => (
                             <div
                               key={project._id}
@@ -488,15 +525,15 @@ const WorkspaceDetail = () => {
                       )}
                     </>
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6 min-w-0">
                       {/* Project Header */}
-                      <div className="bg-white rounded-xl shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h2 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h2>
-                            <p className="text-gray-600">{selectedProject.description || 'No description'}</p>
+                      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between mb-4">
+                          <div className="min-w-0 flex-1">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{selectedProject.name}</h2>
+                            <p className="text-gray-600 text-sm sm:text-base mt-1">{selectedProject.description || 'No description'}</p>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2 shrink-0">
                             <button
                               onClick={() => handleEditProjectClick(selectedProject)}
                               className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
@@ -517,7 +554,7 @@ const WorkspaceDetail = () => {
                             </button>
                             <button
                               onClick={() => navigate(`/workspace/${workspaceId}/project/${selectedProject._id}/create-task`)}
-                              className="bg-[#0052CC] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2"
+                              className="bg-[#0052CC] text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-[#0747A6] transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center min-h-[40px]"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -527,7 +564,7 @@ const WorkspaceDetail = () => {
                             <div className="relative">
                               <button
                                 onClick={() => setShowAddMemberDropdown(!showAddMemberDropdown)}
-                                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+                                className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-green-700 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center min-h-[40px]"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -536,7 +573,7 @@ const WorkspaceDetail = () => {
                               </button>
 
                               {showAddMemberDropdown && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <div className="absolute right-0 left-0 sm:left-auto mt-2 w-full sm:w-64 max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                                   <div className="p-4">
                                     <h3 className="text-sm font-medium text-gray-900 mb-3">Add Project Member</h3>
                                     <select
@@ -655,11 +692,15 @@ const WorkspaceDetail = () => {
           </div>
           </div>
           {/* Right Sidebar for Project Members / Direct Chat */}
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0 bg-white ${
-            showChatList && activeTab === "projects" && selectedProject 
-              ? 'w-64 border-l border-gray-200 opacity-100' 
-              : 'w-0 opacity-0 pointer-events-none'
-          }`}>
+          <div className={`
+            fixed md:relative right-0 top-16 md:top-0 bottom-0 z-40 md:z-auto
+            h-[calc(100vh-4rem)] md:h-auto bg-white border-l border-gray-200
+            transition-all duration-300 ease-in-out flex-shrink-0
+            ${showChatList && activeTab === "projects" && selectedProject 
+              ? 'w-64 opacity-100 translate-x-0' 
+              : 'w-0 md:w-0 opacity-0 pointer-events-none translate-x-full md:translate-x-0'
+            }
+          `}>
             <ChatList 
               members={workspace?.members} 
               onSelectMember={(u) => setDirectChatUser(u)} 
@@ -670,8 +711,17 @@ const WorkspaceDetail = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-20 md:hidden"
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Chat List Mobile Backdrop */}
+        {showChatList && activeTab === "projects" && selectedProject && (
+          <div 
+            className="fixed inset-0 bg-black/30 z-30 md:hidden"
+            onClick={() => setShowChatList(false)}
           />
         )}
 
@@ -690,7 +740,7 @@ const WorkspaceDetail = () => {
         {activeTab === "projects" && selectedProject && (
           <button
             onClick={() => setShowChatList(!showChatList)}
-            className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-[#0052CC] text-white rounded-full shadow-xl hover:bg-[#0747A6] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center focus:outline-none hover:shadow-2xl"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 bg-[#0052CC] text-white rounded-full shadow-xl hover:bg-[#0747A6] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center focus:outline-none hover:shadow-2xl"
             title="Toggle Chat List"
           >
             <div className={`transition-transform duration-300 transform ${showChatList ? 'rotate-90 scale-90' : 'rotate-0 scale-100'}`}>

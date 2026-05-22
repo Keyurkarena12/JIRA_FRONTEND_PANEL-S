@@ -81,6 +81,17 @@ const Timeline = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [tooltip, setTooltip] = useState(null); // { task, x, y }
     const [zoom, setZoom] = useState(1);    // 0.75 | 1 | 1.5
+    const [labelCol, setLabelCol] = useState(220);
+
+    useEffect(() => {
+        const updateLabelCol = () => {
+            const w = window.innerWidth;
+            setLabelCol(w < 640 ? 120 : w < 1024 ? 160 : 220);
+        };
+        updateLabelCol();
+        window.addEventListener('resize', updateLabelCol);
+        return () => window.removeEventListener('resize', updateLabelCol);
+    }, []);
 
     // ── compute visible date range ──────────────────────────────────────────
     const validTasks = tasks.filter(t => t.dueDate);
@@ -226,15 +237,13 @@ const Timeline = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
         return parseDateLocal(t.dueDate) < todayMid;
     }).length;
 
-    const LABEL_COL = 220; // px width of the left task-label column
-
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6 min-w-0 overflow-hidden">
 
             {/* ── Top controls ── */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between mb-4 sm:mb-5">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-semibold text-gray-900">Timeline</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Timeline</h2>
                     {saving && (
                         <span className="flex items-center gap-1 text-xs text-blue-600 font-medium">
                             <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,7 +328,7 @@ const Timeline = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
                         <span className="font-semibold text-red-800">{overdueCount}</span>
                     </div>
                 )}
-                <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-sm ml-auto">
+                <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto sm:ml-auto">
                     <svg className="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h4m-4 5h8" />
                     </svg>
@@ -348,15 +357,15 @@ const Timeline = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
 
             {/* ── Timeline ── */}
             {!taskLoading && tasks.length > 0 && (
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="border border-gray-200 rounded-xl overflow-hidden max-w-full">
 
                     {/* Fixed layout: label col (left) + scrollable chart (right) */}
-                    <div className="flex">
+                    <div className="flex min-w-0 max-w-full">
 
                         {/* ── LEFT: label column (fixed, not scrollable) ── */}
                         <div
                             className="flex-shrink-0 border-r border-gray-200 bg-white z-10"
-                            style={{ width: LABEL_COL }}
+                            style={{ width: labelCol }}
                         >
                             {/* Top-left corner header cells (match 2 header rows height) */}
                             <div className="border-b border-gray-200 bg-gray-50" style={{ height: 28 }}>

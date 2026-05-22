@@ -163,8 +163,8 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
   );
 
   const Column = ({ title, column, bgColor, headerColor, dotColor }) => (
-    <div className="flex-shrink-0 w-80">
-      <div className={`${bgColor} rounded-lg p-3 ml-2 mt-10 transition-all duration-200 ${
+    <div className="flex-shrink-0 w-[min(100%,18rem)] sm:w-72 md:w-80 snap-start">
+      <div className={`${bgColor} rounded-lg p-3 sm:ml-2 mt-2 sm:mt-4 md:mt-6 transition-all duration-200 ${
         dragOverColumn === column ? 'ring-2 ring-blue-400 bg-opacity-80' : ''
       }`}>
         <div className="flex items-center justify-between mb-4">
@@ -177,7 +177,7 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
           </span>
         </div>
         <div 
-          className={`min-h-[400px] space-y-3 transition-all duration-200 ${
+          className={`min-h-[240px] sm:min-h-[320px] md:min-h-[400px] space-y-3 transition-all duration-200 ${
             dragOverColumn === column ? 'bg-blue-50 bg-opacity-50 rounded-lg' : ''
           }`}
           onDragOver={handleDragOver}
@@ -206,8 +206,8 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 rounded-xl p-6">
-        <div className="flex items-center justify-center h-64">
+      <div className="bg-gray-50 rounded-xl p-4 sm:p-6 min-w-0">
+        <div className="flex items-center justify-center h-48 sm:h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
@@ -215,16 +215,16 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
   }
 
   return (
-    <div className="bg-gray-50 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Kanban Board</h2>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+    <div className="bg-gray-50 rounded-xl p-3 sm:p-4 md:p-6 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Kanban Board</h2>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
           <span>{tasks?.length || 0} tasks</span>
-          <span className="text-xs text-gray-400">· Click a card to open</span>
+          <span className="text-xs text-gray-400 hidden sm:inline">· Swipe columns on mobile</span>
         </div>
       </div>
       
-      <div className="flex gap-6 overflow-x-auto pb-4">
+      <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 -mx-1 px-1 snap-x snap-mandatory">
         <Column 
           title="To Do" 
           column="to do" 
