@@ -178,17 +178,17 @@ const Calendar = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6 min-w-0">
 
       {/* Top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between mb-4 sm:mb-5">
+        <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 flex-wrap">
           <button onClick={goToPrev} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Previous month">
             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-semibold text-gray-900 min-w-[180px] text-center">
+          <h2 className="text-base sm:text-xl font-semibold text-gray-900 min-w-[140px] sm:min-w-[180px] text-center">
             {MONTHS[month]} {year}
           </h2>
           <button onClick={goToNext} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Next month">
@@ -247,7 +247,7 @@ const Calendar = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
             <span className="font-semibold text-red-800">{overdueCount}</span>
           </div>
         )}
-        <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-sm ml-auto">
+        <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto sm:ml-auto">
           <svg className="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
           </svg>
@@ -265,19 +265,20 @@ const Calendar = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
 
       {/* Calendar grid */}
       {!taskLoading && (
-        <div className="border border-gray-200 rounded-xl overflow-hidden">
+        <div className="border border-gray-200 rounded-xl overflow-x-auto">
 
           {/* Day headers */}
-          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
-            {DAYS.map(d => (
-              <div key={d} className="py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                {d}
+          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 min-w-[280px] sm:min-w-0">
+            {DAYS.map((d) => (
+              <div key={d} className="py-1.5 sm:py-2 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <span className="hidden sm:inline">{d}</span>
+                <span className="sm:hidden">{d.charAt(0)}</span>
               </div>
             ))}
           </div>
 
           {/* Cells */}
-          <div className="grid grid-cols-7">
+          <div className="grid grid-cols-7 min-w-[280px] sm:min-w-0">
             {cells.map((cell, idx) => {
               const tasksForDay      = cell.isCurrentMonth ? (tasksByDate[cell.dateKey] || []) : [];
               const isDragOver       = dragOverDate === cell.dateKey && cell.isCurrentMonth;
@@ -293,7 +294,7 @@ const Calendar = ({ tasks = [], taskLoading, selectedProject, workspaceMembers }
                   onDragLeave={handleDragLeave}
                   onDrop={e      => handleDrop(e, cell.dateKey, cell.isCurrentMonth)}
                   className={[
-                    'min-h-[110px] p-2 border-b border-r border-gray-200 transition-all duration-100',
+                    'min-h-[72px] sm:min-h-[90px] md:min-h-[110px] p-1 sm:p-2 border-b border-r border-gray-200 transition-all duration-100',
                     !cell.isCurrentMonth                                    ? 'bg-gray-50'              : 'bg-white',
                     cell.isToday && !isDragOver                             ? 'bg-blue-50'              : '',
                     isOverdueDay && tasksForDay.length > 0 && !isDragOver  ? 'bg-red-50/30'            : '',

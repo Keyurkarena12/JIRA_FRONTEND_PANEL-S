@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../../utils/socket';
-import { addMessage, fetchMessages, getOrCreateDirectChatThunk, setTyping, removeTyping } from '../../features/ChatSlice';
+import { addMessage, fetchMessages, getDirectChatThunk, createDirectChatThunk, setTyping, removeTyping } from '../../features/ChatSlice';
 
-const DirectChat = ({ targetUser, onClose }) => {
+const DirectChat = ({ targetUser, onClose, chatListOpen, workspaceId, projectId }) => {
   const [message, setMessage] = useState('');
   const dispatch = useDispatch();
   const { currentRoom, messages, typingUsers } = useSelector((state) => state.chat);
@@ -16,9 +16,9 @@ const DirectChat = ({ targetUser, onClose }) => {
 
   useEffect(() => {
     if (targetUser) {
-      dispatch(getOrCreateDirectChatThunk(targetUser._id));
+      dispatch(getDirectChatThunk({ userId: targetUser._id, workspaceId, projectId }));
     }
-  }, [targetUser, dispatch]);
+  }, [targetUser, workspaceId, projectId, dispatch]);
 
   useEffect(() => {
     if (currentRoom && currentRoom.type === 'private') {
@@ -53,19 +53,43 @@ const DirectChat = ({ targetUser, onClose }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (message.trim() && currentRoom) {
-      const messageData = {
-        chatRoomId: currentRoom._id,
-        senderId: user._id,
-        content: message.trim(),
-        type: 'text'
-      };
+    if (message.trim()) {
+      let activeRoom = currentRoom;
+      const isNewRoom = !activeRoom;
 
-      socket.emit('send_message', messageData);
-      socket.emit('stop_typing', { roomId: currentRoom._id, userId: user._id });
-      setMessage('');
+      if (isNewRoom) {
+        try {
+          const result = await dispatch(createDirectChatThunk({ 
+            userId: targetUser._id, 
+            workspaceId, 
+            projectId 
+          })).unwrap();
+          activeRoom = result;
+        } catch (err) {
+          console.error("Failed to create chat room:", err);
+          return;
+        }
+      }
+
+      if (activeRoom) {
+        if (isNewRoom) {
+          socket.connect();
+          socket.emit('join_room', { roomId: activeRoom._id, userId: user._id });
+        }
+
+        const messageData = {
+          chatRoomId: activeRoom._id,
+          senderId: user._id,
+          content: message.trim(),
+          type: 'text'
+        };
+
+        socket.emit('send_message', messageData);
+        socket.emit('stop_typing', { roomId: activeRoom._id, userId: user._id });
+        setMessage('');
+      }
     }
   };
 
@@ -85,17 +109,32 @@ const DirectChat = ({ targetUser, onClose }) => {
   };
 
   return (
-    <div className="fixed bottom-0 right-[260px] w-80 bg-white rounded-t-xl shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden flex flex-col z-40" style={{ height: '400px' }}>
-      <div className="px-4 py-3 bg-[#0052CC] text-white flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div 
+      className={`
+        fixed bottom-0 z-45 bg-white border border-gray-200 shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)]
+        flex flex-col transition-all duration-300 overflow-hidden
+        
+        /* Mobile styles */
+        left-0 right-0 w-full rounded-t-xl rounded-b-none
+        
+        /* Desktop styles (md and up) */
+        md:left-auto md:w-80 md:rounded-b-none
+        ${chatListOpen ? 'md:right-[270px]' : 'md:right-24'}
+      `} 
+      style={{ height: '400px' }}
+    >
+      <div className="px-4 py-3 bg-[#0052CC] text-white flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
            <img
               src={targetUser.avatar?.url || `https://ui-avatars.com/api/?name=${targetUser.name || targetUser.email}&background=random&size=32`}
               alt={targetUser.name || targetUser.email}
-              className="w-8 h-8 rounded-full bg-white border border-[#0052CC]"
+              className="w-8 h-8 rounded-full bg-white border border-[#0052CC] flex-shrink-0"
             />
-          <h3 className="font-semibold text-sm">{targetUser.name || targetUser.email}</h3>
+          <h3 className="font-semibold text-sm truncate max-w-[150px] md:max-w-[180px]" title={targetUser.name || targetUser.email}>
+            {targetUser.name || targetUser.email}
+          </h3>
         </div>
-        <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
+        <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors flex-shrink-0">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
