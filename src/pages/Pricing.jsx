@@ -46,23 +46,24 @@ const Pricing = () => {
     return getPlanLevel(specificPlanName) > getPlanLevel(currentSpecificPlan);
   };
 
+  
   // Check if a plan variant should be disabled (current or lower)
   const isSpecificPlanDisabled = (specificPlanName) => {
     if (!user) return specificPlanName === 'free';
     if (isCurrentSpecificPlan(specificPlanName)) return true;
     return !canUpgradeToPlan(specificPlanName);
   };
-  
+
   const handleUpgrade = async (planId, planName) => {
     if (!user) {
       alert("Please login first to upgrade your plan.");
       return;
     }
-    
+
     if (isSpecificPlanDisabled(planName)) {
       return;
     }
-    
+
     try {
       await dispatch(createCheckoutSession({ planId })).unwrap();
     } catch (error) {
@@ -147,8 +148,8 @@ const Pricing = () => {
             {/* ====== FREE PLAN ====== */}
             {freePlan && (
               <div className={`bg-white rounded-2xl shadow p-8 border-2 transition-all ${currentPlanName === 'free'
-                  ? 'border-blue-500'
-                  : 'border-gray-200'
+                ? 'border-blue-500'
+                : 'border-gray-200'
                 }`}>
                 {/* ✅ Current plan badge */}
                 {currentPlanName === 'free' && (
@@ -189,10 +190,10 @@ const Pricing = () => {
 
             {/* ====== PRO PLAN ====== */}
             <div className={`bg-white rounded-2xl shadow-xl p-8 border-2 relative transition-all ${currentPlanName === 'pro'
-                ? 'border-blue-500'
-                : !hasAvailableUpgradeInGroup(proPlans)
-                  ? 'border-gray-200 opacity-60'
-                  : 'border-blue-400'
+              ? 'border-blue-500'
+              : !hasAvailableUpgradeInGroup(proPlans)
+                ? 'border-gray-200 opacity-60'
+                : 'border-blue-400'
               }`}>
 
               {/* Most Popular badge — only show if user can upgrade to pro */}
@@ -222,8 +223,8 @@ const Pricing = () => {
                     <div
                       key={plan._id}
                       className={`flex items-center justify-between p-3 rounded-xl border ${disabled
-                          ? 'border-gray-100 bg-gray-50'
-                          : 'border-blue-200 hover:border-blue-400'
+                        ? 'border-gray-100 bg-gray-50'
+                        : 'border-blue-200 hover:border-blue-400'
                         }`}
                     >
                       <div>
@@ -271,8 +272,8 @@ const Pricing = () => {
 
             {/* ====== ENTERPRISE PLAN ====== */}
             <div className={`bg-white rounded-2xl shadow p-8 border-2 transition-all ${currentPlanName === 'enterprise'
-                ? 'border-purple-500'
-                : 'border-gray-200'
+              ? 'border-purple-500'
+              : 'border-gray-200'
               }`}>
 
               {/* ✅ Current plan badge */}
@@ -295,8 +296,8 @@ const Pricing = () => {
                     <div
                       key={plan._id}
                       className={`flex items-center justify-between p-3 rounded-xl border ${disabled
-                          ? 'border-gray-100 bg-gray-50'
-                          : 'border-purple-200 hover:border-purple-400'
+                        ? 'border-gray-100 bg-gray-50'
+                        : 'border-purple-200 hover:border-purple-400'
                         }`}
                     >
                       <div>
