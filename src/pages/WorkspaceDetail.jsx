@@ -651,12 +651,14 @@ const WorkspaceDetail = () => {
                         />
                       )}
                       {projectView === "board" && (
-                        <KanbanBoard
-                          tasks={tasks}
-                          loading={taskLoading}
-                          selectedProject={selectedProject}
-                          workspaceMembers={workspace?.members}
-                        />
+                        <div className="min-w-0">
+                          <KanbanBoard
+                            tasks={tasks}
+                            loading={taskLoading}
+                            selectedProject={selectedProject}
+                            workspaceMembers={workspace?.members}
+                          />
+                        </div>
                       )}
                       {projectView === "chat" && (
                         <Chat workspaceId={workspaceId} projectId={selectedProject?._id} />

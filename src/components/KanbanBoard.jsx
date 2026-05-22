@@ -104,15 +104,15 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
       draggable
       onDragStart={(e) => handleDragStart(e, task)}
       onDragEnd={handleDragEnd}
-      className={`bg-white p-4  rounded-lg shadow-sm cursor-move hover:shadow-md transition-all duration-200 ${
+      className={`bg-white p-3 sm:p-4 rounded-lg shadow-sm cursor-move hover:shadow-md transition-all duration-200 touch-manipulation ${
         dragOverColumn === task.column ? 'ring-2 ring-blue-400 scale-105' : ''
       } ${
         draggedTask?._id === task._id ? 'opacity-50' : ''
       }`}
     >
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-xs font-mono text-gray-400">{task.taskKey}</span>
-        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+      <div className="flex items-start justify-between mb-2 gap-2">
+        <span className="text-[10px] sm:text-xs font-mono text-gray-400 truncate flex-1">{task.taskKey}</span>
+        <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shrink-0 ${
           task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
           task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
           task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
@@ -121,40 +121,40 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
           {task.priority}
         </span>
       </div>
-      <h4 className="font-medium text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">{task.title}</h4>
+      <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base line-clamp-2 min-h-[1.25rem] sm:min-h-[1.5rem]">{task.title}</h4>
       {task.description && (
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{task.description}</p>
+        <p className="text-xs sm:text-sm text-gray-500 mb-3 line-clamp-2">{task.description}</p>
       )}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between mt-2 gap-2">
         {task.assignees && task.assignees.length > 0 ? (
-          <div className="flex items-center -space-x-2">
+          <div className="flex items-center -space-x-1.5 sm:-space-x-2">
             {task.assignees.slice(0, 3).map((assignee, index) => (
               <img
                 key={assignee._id || index}
                 src={`https://ui-avatars.com/api/?name=${assignee.name || 'U'}&background=6366f1&color=fff&size=24`}
                 alt={assignee.name || 'User'}
                 title={assignee.name}
-                className="w-6 h-6 rounded-full border border-white"
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-white"
               />
             ))}
             {task.assignees.length > 3 && (
-              <div className="w-6 h-6 rounded-full border border-white bg-gray-100 flex items-center justify-center z-10 text-[10px] font-medium text-gray-600">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-white bg-gray-100 flex items-center justify-center z-10 text-[9px] sm:text-[10px] font-medium text-gray-600">
                 +{task.assignees.length - 3}
               </div>
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-gray-400">
-            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-gray-400">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <span className="text-xs">Unassigned</span>
+            <span className="text-[10px] sm:text-xs hidden sm:inline">Unassigned</span>
           </div>
         )}
         {task.dueDate && (
-          <span className="text-xs text-gray-400">
+          <span className="text-[10px] sm:text-xs text-gray-400 truncate">
             {new Date(task.dueDate).toLocaleDateString()}
           </span>
         )}
@@ -163,21 +163,21 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
   );
 
   const Column = ({ title, column, bgColor, headerColor, dotColor }) => (
-    <div className="flex-shrink-0 w-[min(100%,18rem)] sm:w-72 md:w-80 snap-start">
-      <div className={`${bgColor} rounded-lg p-3 sm:ml-2 mt-2 sm:mt-4 md:mt-6 transition-all duration-200 ${
+    <div className="flex-shrink-0 w-full sm:w-72 md:w-80 sm:snap-start px-1 first:pl-0 last:pr-0">
+      <div className={`${bgColor} rounded-lg p-2.5 sm:p-3 transition-all duration-200 ${
         dragOverColumn === column ? 'ring-2 ring-blue-400 bg-opacity-80' : ''
       }`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={`font-medium ${headerColor} flex items-center gap-2`}>
-            <div className={`w-3 h-3 ${dotColor} rounded-full ${dragOverColumn === column ? 'animate-pulse' : ''}`}></div>
-            {title}
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className={`font-medium text-sm sm:text-base ${headerColor} flex items-center gap-1.5 sm:gap-2`}>
+            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${dotColor} rounded-full ${dragOverColumn === column ? 'animate-pulse' : ''}`}></div>
+            <span className="truncate">{title}</span>
           </h3>
-          <span className={`text-sm ${headerColor} bg-white/50 px-2 py-1 rounded-full`}>
+          <span className={`text-xs sm:text-sm ${headerColor} bg-white/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full shrink-0`}>
             {getTasksByColumn(column).length}
           </span>
         </div>
         <div 
-          className={`min-h-[240px] sm:min-h-[320px] md:min-h-[400px] space-y-3 transition-all duration-200 ${
+          className={`min-h-[200px] sm:min-h-[240px] md:min-h-[320px] lg:min-h-[400px] space-y-2 sm:space-y-3 transition-all duration-200 ${
             dragOverColumn === column ? 'bg-blue-50 bg-opacity-50 rounded-lg' : ''
           }`}
           onDragOver={handleDragOver}
@@ -186,17 +186,17 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
           onDrop={(e) => handleDrop(e, column)}
         >
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="flex items-center justify-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : getTasksByColumn(column).length > 0 ? (
             getTasksByColumn(column).map(task => <TaskCard key={task._id} task={task} />)
           ) : (
-            <div className="text-center py-8 text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-6 sm:py-8 text-gray-400">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <p className="text-sm">No tasks in {title.toLowerCase()}</p>
+              <p className="text-xs sm:text-sm">No tasks in {title.toLowerCase()}</p>
             </div>
           )}
         </div>
@@ -215,16 +215,16 @@ const KanbanBoard = ({ tasks, loading, selectedProject, workspaceMembers }) => {
   }
 
   return (
-    <div className="bg-gray-50 rounded-xl p-3 sm:p-4 md:p-6 min-w-0">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Kanban Board</h2>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+    <div className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 md:mb-6">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Kanban Board</h2>
+        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-500">
           <span>{tasks?.length || 0} tasks</span>
-          <span className="text-xs text-gray-400 hidden sm:inline">· Swipe columns on mobile</span>
+          <span className="text-[10px] sm:text-xs text-gray-400 hidden xs:inline sm:inline">· Scroll down for more columns</span>
         </div>
       </div>
-      
-      <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 -mx-1 px-1 snap-x snap-mandatory">
+
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6 overflow-y-auto overflow-x-hidden sm:overflow-x-auto sm:overflow-y-hidden pb-3 sm:pb-4 -mx-1 px-1 sm:snap-x sm:snap-center touch-pan-y sm:touch-pan-x" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
         <Column 
           title="To Do" 
           column="to do" 

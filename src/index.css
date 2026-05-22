@@ -97,3 +97,25 @@
 .jira-badge-status-todo { @apply bg-gray-100 text-gray-700; }
 .jira-badge-status-progress { @apply bg-blue-100 text-blue-700; }
 .jira-badge-status-done { @apply bg-green-100 text-green-700; }
+
+/* Mobile-specific scrollbar for horizontal scrolling */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #A5ADBA;
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.touch-pan-x {
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+}
