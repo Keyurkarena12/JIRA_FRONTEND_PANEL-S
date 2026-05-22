@@ -109,17 +109,32 @@ const DirectChat = ({ targetUser, onClose, chatListOpen, workspaceId, projectId 
   };
 
   return (
-    <div className={`fixed bottom-0 ${chatListOpen ? 'right-[270px]' : 'right-24'} w-80 bg-white rounded-t-xl shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden flex flex-col z-45 transition-all duration-300`} style={{ height: '400px' }}>
-      <div className="px-4 py-3 bg-[#0052CC] text-white flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div 
+      className={`
+        fixed bottom-0 z-45 bg-white border border-gray-200 shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.15)]
+        flex flex-col transition-all duration-300 overflow-hidden
+        
+        /* Mobile styles */
+        left-0 right-0 w-full rounded-t-xl rounded-b-none
+        
+        /* Desktop styles (md and up) */
+        md:left-auto md:w-80 md:rounded-b-none
+        ${chatListOpen ? 'md:right-[270px]' : 'md:right-24'}
+      `} 
+      style={{ height: '400px' }}
+    >
+      <div className="px-4 py-3 bg-[#0052CC] text-white flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
            <img
               src={targetUser.avatar?.url || `https://ui-avatars.com/api/?name=${targetUser.name || targetUser.email}&background=random&size=32`}
               alt={targetUser.name || targetUser.email}
-              className="w-8 h-8 rounded-full bg-white border border-[#0052CC]"
+              className="w-8 h-8 rounded-full bg-white border border-[#0052CC] flex-shrink-0"
             />
-          <h3 className="font-semibold text-sm">{targetUser.name || targetUser.email}</h3>
+          <h3 className="font-semibold text-sm truncate max-w-[150px] md:max-w-[180px]" title={targetUser.name || targetUser.email}>
+            {targetUser.name || targetUser.email}
+          </h3>
         </div>
-        <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
+        <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors flex-shrink-0">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>

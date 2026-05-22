@@ -89,9 +89,9 @@ const Chat = ({ workspaceId, projectId }) => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="flex flex-col min-h-[min(70vh,600px)] max-h-[calc(100vh-12rem)] sm:max-h-[600px] h-[min(70vh,600px)] bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden min-w-0 w-full">
       {/* Chat Header */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             {currentRoom?.name || 'Workspace Chat'}
@@ -103,12 +103,12 @@ const Chat = ({ workspaceId, projectId }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#F9FAFB]">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#F9FAFB]">
         {messages.map((msg, index) => {
           const isMe = msg.sender?._id === user._id || msg.sender === user._id;
           return (
             <div key={msg._id || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`max-w-[85%] sm:max-w-[70%] flex gap-2 sm:gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                 {!isMe && (
                   <img
                     src={`https://ui-avatars.com/api/?name=${msg.sender?.name || 'User'}&background=random&size=32`}
@@ -147,7 +147,7 @@ const Chat = ({ workspaceId, projectId }) => {
       )}
 
       {/* Input Area */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-100 flex gap-3">
+      <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white border-t border-gray-100 flex gap-2 sm:gap-3 shrink-0">
         <input
           type="text"
           value={message}

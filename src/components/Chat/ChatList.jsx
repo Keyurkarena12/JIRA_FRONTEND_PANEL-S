@@ -5,7 +5,7 @@ const ChatList = ({ members, onSelectMember }) => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="w-64 bg-white border-l border-gray-200 flex flex-col h-full flex-shrink-0">
+    <div className="w-full bg-white flex flex-col h-full">
       <div className="p-4 border-b border-gray-100">
         <h3 className="font-semibold text-gray-900">Project Members</h3>
         <p className="text-xs text-gray-500 mt-1">Direct Messages</p>

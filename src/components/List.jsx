@@ -17,7 +17,7 @@ const List = ({
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6 min-w-0">
       {taskLoading && (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -26,33 +26,33 @@ const List = ({
       )}
 
       {/* Task Filters and Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 w-full lg:flex lg:flex-wrap lg:w-auto">
+          <select className="w-full sm:w-auto min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option>All Tasks</option>
             <option>To Do</option>
             <option>In Progress</option>
             <option>Complete</option>
           </select>
-          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select className="w-full sm:w-auto min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option>All Priorities</option>
             <option>Urgent</option>
             <option>High</option>
             <option>Medium</option>
             <option>Low</option>
           </select>
-          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select className="w-full sm:w-auto min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option>All Assignees</option>
             <option>Unassigned</option>
           </select>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <button type="button" className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Filter">
             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button type="button" className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="View options">
             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -60,9 +60,59 @@ const List = ({
         </div>
       </div>
 
-      {/* Task Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      {/* Mobile: task cards */}
+      <div className="md:hidden space-y-3">
+        {tasks && tasks.length > 0 ? (
+          tasks.map((task) => (
+            <div
+              key={task._id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelectedTaskId(task._id)}
+              onKeyDown={(e) => e.key === 'Enter' && setSelectedTaskId(task._id)}
+              className="border border-gray-200 rounded-lg p-4 hover:bg-blue-50/50 cursor-pointer transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="font-medium text-gray-900 text-sm break-words flex-1">{task.title}</p>
+                <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                  task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                  task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                  task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-gray-100 text-gray-700'
+                }`}>
+                  {task.priority}
+                </span>
+              </div>
+              {task.description && (
+                <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>
+              )}
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className={`inline-flex px-2 py-0.5 rounded-full font-medium ${
+                  task.column === 'complete' ? 'bg-green-100 text-green-700' :
+                  task.column === 'in progress' ? 'bg-blue-100 text-blue-700' :
+                  'bg-gray-100 text-gray-700'
+                }`}>
+                  {task.column || 'no status'}
+                </span>
+                {task.dueDate && (
+                  <span className="text-gray-500">
+                    Due {new Date(task.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+                <span className="text-gray-400 font-mono">{task.taskKey}</span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="py-8 text-center text-gray-500 text-sm">
+            No tasks found. Create your first task to get started.
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: Task Table */}
+      <div className="hidden md:block overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -73,9 +123,9 @@ const List = ({
               </th>
               <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee</th>
               <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Due Date</th>
               <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Key</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -198,7 +248,7 @@ const List = ({
                       {task.priority}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 hidden lg:table-cell">
                     {task.dueDate ? (
                       <span className="text-sm text-gray-700">
                         {new Date(task.dueDate).toLocaleDateString()}
@@ -215,7 +265,7 @@ const List = ({
                       {task.column || 'no status'}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 hidden xl:table-cell">
                     <span className="text-sm font-mono text-gray-500">{task.taskKey}</span>
                   </td>
                 </tr>
