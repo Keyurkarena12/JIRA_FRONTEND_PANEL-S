@@ -1,15 +1,16 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import axios from 'axios'
+import { AUTH_API } from '../config/api'
 
-const API ="http://localhost:5000/api/auth";
+const API = AUTH_API;
 
 
-export const loginUser = createAsyncThunk('auth/login',async(data)=>{
+export const loginUser = createAsyncThunk('auth/login', async (data) => {
 
-    const response = await axios.post(`${API}/login`,data)
+    const response = await axios.post(`${API}/login`, data)
 
-    localStorage.setItem('token',response.data.token);
+    localStorage.setItem('token', response.data.token);
 
     return response.data.user
 
@@ -19,11 +20,11 @@ export const loginUser = createAsyncThunk('auth/login',async(data)=>{
 
 
 
-export const registerUser = createAsyncThunk('auth/register',async(data)=>{
+export const registerUser = createAsyncThunk('auth/register', async (data) => {
 
-    const response = await axios.post(`${API}/register`,data)
+    const response = await axios.post(`${API}/register`, data)
 
-    localStorage.setItem('token',response.data.token);
+    localStorage.setItem('token', response.data.token);
 
     return response.data.user
 
@@ -33,11 +34,11 @@ export const registerUser = createAsyncThunk('auth/register',async(data)=>{
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
 
-  await axios.post(`${API}/logout`, {}, { withCredentials: true });
+    await axios.post(`${API}/logout`, {}, { withCredentials: true });
 
-  localStorage.removeItem("token");
+    localStorage.removeItem("token");
 
-  localStorage.removeItem("user");
+    localStorage.removeItem("user");
 
 });
 
@@ -45,23 +46,23 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
 
 
 
-export const forgotpassword = createAsyncThunk("auth/forgotpassword",async (email) =>{
+export const forgotpassword = createAsyncThunk("auth/forgotpassword", async (email) => {
 
- const response = await axios.post(`${API}/forgot-password`,{email});
+    const response = await axios.post(`${API}/forgot-password`, { email });
 
- console.log(response.data);
+    console.log(response.data);
 
- return response.data;
+    return response.data;
 
-} )
-
-
+})
 
 
 
-export const resetpassword = createAsyncThunk('auth/resetpassword',async(data)=>{
 
-    const response = await axios.post(`${API}/reset-password`,data)
+
+export const resetpassword = createAsyncThunk('auth/resetpassword', async (data) => {
+
+    const response = await axios.post(`${API}/reset-password`, data)
 
     return response.data
 
@@ -71,11 +72,11 @@ export const resetpassword = createAsyncThunk('auth/resetpassword',async(data)=>
 
 
 
-export const currentUser = createAsyncThunk('auth/currentUser',async()=>{
+export const currentUser = createAsyncThunk('auth/currentUser', async () => {
 
     const token = localStorage.getItem('token');
 
-    const response = await axios.get(`${API}/current-user`,{
+    const response = await axios.get(`${API}/current-user`, {
 
         headers: {
 
@@ -116,27 +117,27 @@ const authSlice = createSlice({
 
     name: "auth",
 
-    initialState:{
+    initialState: {
 
-        user:null,
+        user: null,
 
         token: localStorage.getItem('token') || null,
 
-        isAuthenticated:false,
+        isAuthenticated: false,
 
-        loading:false,
+        loading: false,
 
-        error:null,
+        error: null,
 
-        otpInfo:null,
+        otpInfo: null,
 
-        resetInfo:null
+        resetInfo: null
 
     },
 
-    reducers:{
+    reducers: {
 
-        logout:(state) =>{
+        logout: (state) => {
 
             state.user = null;
 
@@ -150,7 +151,7 @@ const authSlice = createSlice({
 
         },
 
-        clearError:(state) =>{
+        clearError: (state) => {
 
             state.error = null;
 
@@ -158,33 +159,33 @@ const authSlice = createSlice({
 
     },
 
-    extraReducers:(builder) =>{
+    extraReducers: (builder) => {
 
         builder
 
-        //login 
+            //login 
 
-        .addCase(loginUser.pending,(state)=>{
+            .addCase(loginUser.pending, (state) => {
 
-            state.loading =true;
+                state.loading = true;
 
-            state.error = null; 
+                state.error = null;
 
-        })
+            })
 
-        .addCase(loginUser.fulfilled,(state,action)=>{
+            .addCase(loginUser.fulfilled, (state, action) => {
 
-            state.loading = false;
+                state.loading = false;
 
-            state.user = action.payload;
+                state.user = action.payload;
 
-            state.isAuthenticated = true;
+                state.isAuthenticated = true;
 
 
 
-        })
+            })
 
-            .addCase(loginUser.rejected,(state,action)=>{
+            .addCase(loginUser.rejected, (state, action) => {
 
                 state.loading = false;
 
@@ -194,7 +195,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(logoutUser.fulfilled,(state)=>{
+            .addCase(logoutUser.fulfilled, (state) => {
 
                 state.user = null;
 
@@ -204,7 +205,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(forgotpassword.pending,(state,action)=>{
+            .addCase(forgotpassword.pending, (state, action) => {
 
                 state.loading = true;
 
@@ -212,7 +213,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(forgotpassword.fulfilled,(state,action)=>{
+            .addCase(forgotpassword.fulfilled, (state, action) => {
 
                 state.loading = false;
 
@@ -220,7 +221,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(forgotpassword.rejected,(state,action)=>{
+            .addCase(forgotpassword.rejected, (state, action) => {
 
                 state.loading = false;
 
@@ -228,7 +229,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(resetpassword.pending,(state,actino)=>{
+            .addCase(resetpassword.pending, (state, actino) => {
 
                 state.loading = true;
 
@@ -236,7 +237,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(resetpassword.fulfilled,(state,action)=>{
+            .addCase(resetpassword.fulfilled, (state, action) => {
 
                 state.loading = false;
 
@@ -244,7 +245,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(resetpassword.rejected,(state,action)=>{
+            .addCase(resetpassword.rejected, (state, action) => {
 
                 state.loading = false;
 
@@ -252,9 +253,9 @@ const authSlice = createSlice({
 
             })
 
-         
 
-            .addCase(updateProfile.pending,(state)=>{
+
+            .addCase(updateProfile.pending, (state) => {
 
                 state.loading = true;
 
@@ -262,7 +263,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(updateProfile.fulfilled,(state,action)=>{
+            .addCase(updateProfile.fulfilled, (state, action) => {
 
                 state.loading = false;
 
@@ -270,7 +271,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(updateProfile.rejected,(state,action)=>{
+            .addCase(updateProfile.rejected, (state, action) => {
 
                 state.loading = false;
 
@@ -280,7 +281,7 @@ const authSlice = createSlice({
 
 
 
-            .addCase(currentUser.pending,(state)=>{
+            .addCase(currentUser.pending, (state) => {
 
                 state.loading = true;
 
@@ -288,7 +289,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(currentUser.fulfilled,(state,action)=>{
+            .addCase(currentUser.fulfilled, (state, action) => {
 
                 state.loading = false;
 
@@ -296,7 +297,7 @@ const authSlice = createSlice({
 
             })
 
-            .addCase(currentUser.rejected,(state,action)=>{
+            .addCase(currentUser.rejected, (state, action) => {
 
                 state.loading = false;
 
@@ -304,13 +305,13 @@ const authSlice = createSlice({
 
             })
 
-        }
+    }
 
-})  
+})
 
 
 
-export const {logout,clearError} = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 
 export default authSlice.reducer;
 

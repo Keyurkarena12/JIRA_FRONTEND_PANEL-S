@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { PROJECT_API } from "../config/api";
 
-const API = "http://localhost:5000/api/project";
+const API = PROJECT_API;
 
-export const createProject = createAsyncThunk("project/create", async({ name, description, workspaceId }) => {
+export const createProject = createAsyncThunk("project/create", async ({ name, description, workspaceId }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${API}/create-project/${workspaceId}`, {
         name,
@@ -17,7 +18,7 @@ export const createProject = createAsyncThunk("project/create", async({ name, de
     return response.data;
 });
 
-export const getAllProjects = createAsyncThunk("project/getAll", async({ workspaceId }) => {
+export const getAllProjects = createAsyncThunk("project/getAll", async ({ workspaceId }) => {
     const token = localStorage.getItem('token');
     const response = await axios.get(`${API}/get-all-projects/${workspaceId}`, {
         headers: {
@@ -28,7 +29,7 @@ export const getAllProjects = createAsyncThunk("project/getAll", async({ workspa
     return response.data;
 });
 
-export const updateProject = createAsyncThunk("project/update", async({ projectId, name, description }) => {
+export const updateProject = createAsyncThunk("project/update", async ({ projectId, name, description }) => {
     const token = localStorage.getItem('token');
     const response = await axios.put(`${API}/update-project/${projectId}`, {
         name,
@@ -42,7 +43,7 @@ export const updateProject = createAsyncThunk("project/update", async({ projectI
     return response.data;
 });
 
-export const deleteProject = createAsyncThunk("project/delete", async(projectId) => {
+export const deleteProject = createAsyncThunk("project/delete", async (projectId) => {
     const token = localStorage.getItem('token');
     const response = await axios.delete(`${API}/delete-project/${projectId}`, {
         headers: {
@@ -53,7 +54,7 @@ export const deleteProject = createAsyncThunk("project/delete", async(projectId)
     return response.data;
 });
 
-export const addProjectMember = createAsyncThunk("project/addMember", async({ projectId, userId, role }) => {
+export const addProjectMember = createAsyncThunk("project/addMember", async ({ projectId, userId, role }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${API}/add-projectmember/${projectId}`, {
         userId,

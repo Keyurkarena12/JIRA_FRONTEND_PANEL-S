@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { SUBSCRIPTION_API } from '../config/api';
 
-const BILLING_API="http://localhost:5000/api/subscription"
+const BILLING_API = SUBSCRIPTION_API;
 
 // ✅ Async thunk for fetching billing history
 export const fetchBillingHistory = createAsyncThunk(
@@ -31,11 +32,11 @@ export const cancelRecurringBilling = createAsyncThunk(
         typeof payload === 'string'
           ? { subscriptionId: payload }
           : {
-              ...(payload.subscriptionId && { subscriptionId: payload.subscriptionId }),
-              ...(payload.stripeSubscriptionId && {
-                stripeSubscriptionId: payload.stripeSubscriptionId
-              })
-            };
+            ...(payload.subscriptionId && { subscriptionId: payload.subscriptionId }),
+            ...(payload.stripeSubscriptionId && {
+              stripeSubscriptionId: payload.stripeSubscriptionId
+            })
+          };
 
       const response = await axios.post(
         `${BILLING_API}/cancel-recurring-billing`,
