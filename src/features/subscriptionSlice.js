@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-  const PLAN_API = "http://localhost:5000/api/plan"
-  const CHECKOUT_API = "http://localhost:5000/api/subscription"
+import { PLAN_API, SUBSCRIPTION_API } from '../config/api';
+
+const CHECKOUT_API = SUBSCRIPTION_API;
 // ✅ Fetch all plans — GET /api/plan/get-all-plans
 export const fetchPlans = createAsyncThunk(
   'subscription/fetchPlans',
@@ -44,7 +45,7 @@ export const createCheckoutSession = createAsyncThunk(
   async ({ planId }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
-      
+
       const response = await axios.post(
         `${CHECKOUT_API}/create-checkout-session`,
         { planId },

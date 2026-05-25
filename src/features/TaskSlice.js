@@ -1,10 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { PROJECT_API, TASK_API } from "../config/api";
 
-const PROJECT_API = "http://localhost:5000/api/project";
-const TASK_API = "http://localhost:5000/api/task";
-
-export const createTask = createAsyncThunk("task/create", async({ title, description, projectId, column, priority, dueDate }) => {
+export const createTask = createAsyncThunk("task/create", async ({ title, description, projectId, column, priority, dueDate }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${PROJECT_API}/task/${projectId}`, {
         title,
@@ -18,7 +16,7 @@ export const createTask = createAsyncThunk("task/create", async({ title, descrip
     return response.data;
 });
 
-export const fetchprojectTask = createAsyncThunk("task/fetchproject", async(projectId) => {
+export const fetchprojectTask = createAsyncThunk("task/fetchproject", async (projectId) => {
     const token = localStorage.getItem('token');
     const response = await axios.get(`${TASK_API}/project/${projectId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -26,7 +24,7 @@ export const fetchprojectTask = createAsyncThunk("task/fetchproject", async(proj
     return response.data;
 });
 
-export const getTaskById = createAsyncThunk("task/getById", async(taskId) => {
+export const getTaskById = createAsyncThunk("task/getById", async (taskId) => {
     const token = localStorage.getItem('token');
     const response = await axios.get(`${TASK_API}/${taskId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -34,7 +32,7 @@ export const getTaskById = createAsyncThunk("task/getById", async(taskId) => {
     return response.data;
 });
 
-export const updateTask = createAsyncThunk("task/update", async({ taskId, ...fields }) => {
+export const updateTask = createAsyncThunk("task/update", async ({ taskId, ...fields }) => {
     const token = localStorage.getItem('token');
     const response = await axios.put(`${TASK_API}/${taskId}`, fields, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -42,7 +40,7 @@ export const updateTask = createAsyncThunk("task/update", async({ taskId, ...fie
     return response.data;
 });
 
-export const deleteTask = createAsyncThunk("task/delete", async(taskId) => {
+export const deleteTask = createAsyncThunk("task/delete", async (taskId) => {
     const token = localStorage.getItem('token');
     await axios.delete(`${TASK_API}/${taskId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -50,7 +48,7 @@ export const deleteTask = createAsyncThunk("task/delete", async(taskId) => {
     return { taskId };
 });
 
-export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", async({ taskId, memberId }) => {
+export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", async ({ taskId, memberId }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${TASK_API}/assignee/${taskId}`, {
         assigneeId: memberId
@@ -58,9 +56,9 @@ export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", as
         headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
-}); 
+});
 
-export const moveTask = createAsyncThunk("task/move", async({ taskId, column }) => {
+export const moveTask = createAsyncThunk("task/move", async ({ taskId, column }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${TASK_API}/move/${taskId}`, {
         column
@@ -70,7 +68,7 @@ export const moveTask = createAsyncThunk("task/move", async({ taskId, column }) 
     return response.data;
 });
 
-export const addTaskComment = createAsyncThunk("task/addComment", async({ taskId, text }) => {
+export const addTaskComment = createAsyncThunk("task/addComment", async ({ taskId, text }) => {
     const token = localStorage.getItem('token');
     const response = await axios.post(`${TASK_API}/comments/${taskId}`, {
         text
@@ -119,17 +117,17 @@ const taskSlice = createSlice({
                 state.error = action.error.message;
             })
 
-            .addCase(fetchprojectTask.pending,(state) => {
+            .addCase(fetchprojectTask.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchprojectTask.fulfilled,(state, action) => {
+            .addCase(fetchprojectTask.fulfilled, (state, action) => {
 
                 state.loading = false;
                 state.tasks = action.payload.task;
                 state.error = null;
             })
-            .addCase(fetchprojectTask.rejected,(state, action) => {
+            .addCase(fetchprojectTask.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
@@ -168,11 +166,11 @@ const taskSlice = createSlice({
                 state.error = action.error.message;
             })
 
-            .addCase(assigneeTaskMember.pending,(state) => {
+            .addCase(assigneeTaskMember.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(assigneeTaskMember.fulfilled,(state, action) => {
+            .addCase(assigneeTaskMember.fulfilled, (state, action) => {
                 state.loading = false;
                 state.success = true;
                 const updated = action.payload.task;
@@ -180,7 +178,7 @@ const taskSlice = createSlice({
                 if (idx !== -1) state.tasks[idx] = updated;
                 state.error = null;
             })
-            .addCase(assigneeTaskMember.rejected,(state, action) => {
+            .addCase(assigneeTaskMember.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

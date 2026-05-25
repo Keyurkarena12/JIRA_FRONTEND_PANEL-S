@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { loginUser } from '../features/authSlice'
 import { useEffect } from 'react'
+import { AUTH_API } from '../config/api'
 
 export const Login = () => {
 
@@ -14,12 +15,11 @@ export const Login = () => {
 
   const [googleLoading, setGoogleLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
-  const baseUrl = 'http://localhost:5000';
 
   const handleGooglelogin = () => {
     try {
       setGoogleLoading(true)
-      const googleUrl = `${baseUrl}/api/auth/google`;
+      const googleUrl = `${AUTH_API}/google`;
       window.location.href = googleUrl;
     } catch (error) {
       console.log(error);
@@ -30,15 +30,15 @@ export const Login = () => {
     }
   }
 
-  const handleGithublogin = () =>{
+  const handleGithublogin = () => {
     try {
       setGithubLoading(true)
-      const githubUrl = `${baseUrl}/api/auth/github`;
+      const githubUrl = `${AUTH_API}/github`;
       window.location.href = githubUrl
     } catch (error) {
       console.log(error)
     }
-    finally{
+    finally {
       setGithubLoading(false)
     }
   }

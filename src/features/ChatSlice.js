@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CHAT_API } from "../config/api";
 
-const API_URL = `${import.meta.env.VITE_BASE_URL}/api` || "http://localhost:5000/api";
+const API_URL = CHAT_API;
 
 export const getOrCreateChat = createAsyncThunk(
   "chat/getOrCreate",
@@ -67,7 +68,7 @@ export const createDirectChatThunk = createAsyncThunk(
   "chat/createDirectChat",
   async ({ userId, workspaceId, projectId }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/chat/direct`, 
+      const response = await axios.post(`${API_URL}/chat/direct`,
         { userId, workspaceId, projectId },
         {
           withCredentials: true,

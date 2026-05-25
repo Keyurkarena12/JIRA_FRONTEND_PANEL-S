@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from "../features/authSlice"
+import { AUTH_API } from "../config/api"
 
 
 const Register = () => {
@@ -15,36 +16,33 @@ const Register = () => {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [githubLoading, setGithubLoading] = useState(false)
 
-  const baseUrl = 'http://localhost:5000';
-
-
-  const handleGooglelogin =() =>{
+  const handleGooglelogin = () => {
     try {
       setGoogleLoading(true)
-      const googleUrl = `${baseUrl}/api/auth/google`;
+      const googleUrl = `${AUTH_API}/google`;
       window.location.href = googleUrl;
     } catch (error) {
       console.log(error);
       setGoogleLoading(false)
     }
-    finally{
+    finally {
       setGoogleLoading(false)
     }
   }
 
-  const handleGithublogin = () =>{
+  const handleGithublogin = () => {
     try {
       setGithubLoading(true)
-      const githubUrl = `${baseUrl}/api/auth/github`;
+      const githubUrl = `${AUTH_API}/github`;
       window.location.href = githubUrl
     } catch (error) {
       console.log(error)
     }
-    finally{
+    finally {
       setGithubLoading(false)
     }
   }
-  
+
   const userData = localStorage.getItem('user');
 
   const dispatch = useDispatch()
@@ -74,12 +72,12 @@ const Register = () => {
       console.log(error);
     }
   }, [error])
-  
+
   useEffect(() => {
     if (userData) {
       navigate('/');
     }
-    else{
+    else {
       navigate('/register');
     }
   }, [userData])
@@ -87,7 +85,7 @@ const Register = () => {
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-sm bg-white shadow-lg rounded-2xl p-5">
-    <h2 className="text-2xl font-bold text-center text-blue-600 mb-4">
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-4">
           Create Account
         </h2>
 
@@ -143,7 +141,7 @@ const Register = () => {
             </div>
 
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={handleGooglelogin}
                 type="button"
                 className="w-full border border-gray-300 py-3 rounded-lg font-medium flex items-center justify-center gap-3 hover:bg-gray-50 transition"
@@ -156,7 +154,7 @@ const Register = () => {
                 Continue with Google
               </button>
 
-              <button 
+              <button
                 onClick={handleGithublogin}
                 type="button"
                 className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-3 hover:bg-black transition"
@@ -186,6 +184,6 @@ const Register = () => {
   )
 }
 
-export default Register   
+export default Register
 
 

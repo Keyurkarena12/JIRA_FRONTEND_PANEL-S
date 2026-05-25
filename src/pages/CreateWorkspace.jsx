@@ -19,7 +19,7 @@ function CreateWorkspace() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    dispatch(createWorkspace(formData))
+    await dispatch(createWorkspace(formData)).unwrap()
     .then(() => {
       navigate('/workspaces')
     })
