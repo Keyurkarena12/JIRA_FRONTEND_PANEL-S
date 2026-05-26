@@ -1,79 +1,55 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { PROJECT_API, TASK_API } from "../config/api";
+import { apiClient } from "../api/client";
+import { ENDPOINTS } from "../api/endpoints";
 
 export const createTask = createAsyncThunk("task/create", async ({ title, description, projectId, column, priority, dueDate }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${PROJECT_API}/task/${projectId}`, {
+    const response = await apiClient.post(ENDPOINTS.project.createTask(projectId), {
         title,
         description,
         column,
         priority,
         dueDate
-    }, {
-        headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
 });
 
 export const fetchprojectTask = createAsyncThunk("task/fetchproject", async (projectId) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${TASK_API}/project/${projectId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await apiClient.get(ENDPOINTS.task.byProject(projectId));
     return response.data;
 });
 
 export const getTaskById = createAsyncThunk("task/getById", async (taskId) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${TASK_API}/${taskId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await apiClient.get(ENDPOINTS.task.byId(taskId));
     return response.data;
 });
 
 export const updateTask = createAsyncThunk("task/update", async ({ taskId, ...fields }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.put(`${TASK_API}/${taskId}`, fields, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await apiClient.put(ENDPOINTS.task.update(taskId), fields);
     return response.data;
 });
 
 export const deleteTask = createAsyncThunk("task/delete", async (taskId) => {
-    const token = localStorage.getItem('token');
-    await axios.delete(`${TASK_API}/${taskId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    await apiClient.delete(ENDPOINTS.task.delete(taskId));
     return { taskId };
 });
 
 export const assigneeTaskMember = createAsyncThunk("task/assigneetaskmember", async ({ taskId, memberId }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${TASK_API}/assignee/${taskId}`, {
+    const response = await apiClient.post(ENDPOINTS.task.assignee(taskId), {
         assigneeId: memberId
-    }, {
-        headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
 });
 
 export const moveTask = createAsyncThunk("task/move", async ({ taskId, column }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${TASK_API}/move/${taskId}`, {
+    const response = await apiClient.post(ENDPOINTS.task.move(taskId), {
         column
-    }, {
-        headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
 });
 
 export const addTaskComment = createAsyncThunk("task/addComment", async ({ taskId, text }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${TASK_API}/comments/${taskId}`, {
+    const response = await apiClient.post(ENDPOINTS.task.comment(taskId), {
         text
-    }, {
-        headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
 });

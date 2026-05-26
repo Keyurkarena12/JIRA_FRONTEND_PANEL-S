@@ -1,189 +1,114 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { registerUser } from "../features/authSlice"
-import { AUTH_API } from "../config/api"
-
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../features/authSlice';
+import AuthCard, { AuthDivider } from '../components/auth/AuthCard';
+import OAuthButtons from '../components/auth/OAuthButtons';
 
 const Register = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
-  const [FormData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  })
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [githubLoading, setGithubLoading] = useState(false)
-
-  const handleGooglelogin = () => {
-    try {
-      setGoogleLoading(true)
-      const googleUrl = `${AUTH_API}/google`;
-      window.location.href = googleUrl;
-    } catch (error) {
-      console.log(error);
-      setGoogleLoading(false)
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/', { replace: true });
     }
-    finally {
-      setGoogleLoading(false)
-    }
-  }
-
-  const handleGithublogin = () => {
-    try {
-      setGithubLoading(true)
-      const githubUrl = `${AUTH_API}/github`;
-      window.location.href = githubUrl
-    } catch (error) {
-      console.log(error)
-    }
-    finally {
-      setGithubLoading(false)
-    }
-  }
-
-  const userData = localStorage.getItem('user');
-
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-
-  const { loading, error } = useSelector(state => state.auth)
+  }, [navigate]);
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-
-    dispatch(registerUser(FormData))
+    e.preventDefault();
+    dispatch(registerUser(formData))
       .unwrap()
       .then(() => {
-        setFormData({
-          name: '',
-          email: '',
-          password: ''
-        });
+        setFormData({ name: '', email: '', password: '' });
         navigate('/login');
-      }).catch((err) => {
-        console.log(err);
       })
-
-  }
-  useEffect(() => {
-    if (error) {
-      console.log(error);
-    }
-  }, [error])
-
-  useEffect(() => {
-    if (userData) {
-      navigate('/');
-    }
-    else {
-      navigate('/register');
-    }
-  }, [userData])
+      .catch((err) => console.log(err));
+  };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-sm bg-white shadow-lg rounded-2xl p-5">
-        <h2 className="text-2xl font-bold text-center text-blue-600 mb-4">
-          Create Account
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFormData({ ...FormData, name: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFormData({ ...FormData, email: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="Enter password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFormData({ ...FormData, password: e.target.value })}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
-          >
-            Register
-          </button>
-
-          <div className="mt-4">
-            <div className="flex items-center my-2">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-3 text-sm text-gray-500">OR</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={handleGooglelogin}
-                type="button"
-                className="w-full border border-gray-300 py-3 rounded-lg font-medium flex items-center justify-center gap-3 hover:bg-gray-50 transition"
-              >
-                <img
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="Google"
-                  className="w-5 h-5"
-                />
-                Continue with Google
-              </button>
-
-              <button
-                onClick={handleGithublogin}
-                type="button"
-                className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-3 hover:bg-black transition"
-              >
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/25/25231.png"
-                  alt="GitHub"
-                  className="w-5 h-5"
-                />
-                Continue with GitHub
-              </button>
-            </div>
-          </div>
-
-        </form>
-
-        <p className="text-center text-sm text-gray-600 mt-5">
-          Already have an account?{" "}
-          <Link to="/login">
-            <span className="text-blue-600 cursor-pointer hover:underline">
-              Login
-            </span>
+    <AuthCard
+      title="Create your account"
+      subtitle="Start organizing your team in minutes."
+      footer={
+        <p className="text-center text-sm text-[var(--text-secondary)]">
+          Already have an account?{' '}
+          <Link to="/login" className="font-semibold text-[var(--brand-primary)] hover:underline">
+            Sign in
           </Link>
         </p>
-      </div>
-    </div>
-  )
-}
+      }
+    >
+      {error && (
+        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm" role="alert">
+          Registration failed. Please try again with different details.
+        </div>
+      )}
 
-export default Register
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label htmlFor="name" className="field-label">Full name</label>
+          <input
+            id="name"
+            type="text"
+            required
+            autoComplete="name"
+            placeholder="Alex Johnson"
+            className="field-input"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
 
+        <div>
+          <label htmlFor="email" className="field-label">Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@company.com"
+            className="field-input"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+        </div>
 
+        <div>
+          <label htmlFor="password" className="field-label">Password</label>
+          <input
+            id="password"
+            type="password"
+            required
+            autoComplete="new-password"
+            placeholder="Create a strong password"
+            className="field-input"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          />
+        </div>
+
+        <button type="submit" disabled={loading} className="btn-primary w-full min-h-[52px] text-base">
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
+
+      <AuthDivider />
+
+      <OAuthButtons
+        googleLoading={googleLoading}
+        githubLoading={githubLoading}
+        onGoogle={() => setGoogleLoading(true)}
+        onGithub={() => setGithubLoading(true)}
+      />
+    </AuthCard>
+  );
+};
+
+export default Register;

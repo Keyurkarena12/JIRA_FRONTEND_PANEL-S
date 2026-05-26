@@ -1,40 +1,43 @@
-import axios from 'axios'
-import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { AUTH_API } from '../config/api'
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiClient } from '../api/client';
+import { ENDPOINTS } from '../api/endpoints';
 
 const AuthSuccess = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchuser = async () => {
-      const params = new URLSearchParams(window.location.search)
-      const token = params.get('access_token') || params.get('token')
+    const fetchUser = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('access_token') || params.get('token');
 
       if (!token) {
-        return navigate('/login')
+        navigate('/login', { replace: true });
+        return;
       }
 
       try {
-        const res = await axios.get(`${AUTH_API}/user`, {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify(res.data.user))
-        navigate('/')
+        const res = await apiClient.get(ENDPOINTS.auth.user, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        navigate('/', { replace: true });
       } catch (error) {
-        console.log('error fetching user', error)
-        navigate('/login')
+        console.error('error fetching user', error);
+        navigate('/login', { replace: true });
       }
-    }
+    };
 
-    fetchuser()
-  }, [navigate])
+    fetchUser();
+  }, [navigate]);
 
   return (
-    <div>AuthSuccess</div>
-  )
-}
+    <div className="text-center py-12">
+      <div className="inline-block w-10 h-10 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-[var(--text-secondary)]">Completing sign in…</p>
+    </div>
+  );
+};
 
-export default AuthSuccess
+export default AuthSuccess;

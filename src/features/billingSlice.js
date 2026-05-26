@@ -1,20 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { SUBSCRIPTION_API } from '../config/api';
+import { apiClient } from '../api/client';
+import { ENDPOINTS } from '../api/endpoints';
 
-const BILLING_API = SUBSCRIPTION_API;
-
-// ✅ Async thunk for fetching billing history
 export const fetchBillingHistory = createAsyncThunk(
   'billing/fetchHistory',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${BILLING_API}/billing-history`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.subscription.billingHistory);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch billing history');
@@ -22,12 +14,10 @@ export const fetchBillingHistory = createAsyncThunk(
   }
 );
 
-// ✅ Cancel recurring billing — pass Mongo subscriptionId and/or stripeSubscriptionId (needed for older plans)
 export const cancelRecurringBilling = createAsyncThunk(
   'billing/cancelRecurring',
   async (payload, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
       const body =
         typeof payload === 'string'
           ? { subscriptionId: payload }
@@ -38,15 +28,7 @@ export const cancelRecurringBilling = createAsyncThunk(
             })
           };
 
-      const response = await axios.post(
-        `${BILLING_API}/cancel-recurring-billing`,
-        body,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiClient.post(ENDPOINTS.subscription.cancelRecurring, body);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to cancel recurring billing');

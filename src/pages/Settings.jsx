@@ -1,8 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile } from '../features/authSlice';
 import { fetchBillingHistory } from '../features/billingSlice';
 import { fetchPlans, cancelRecurringBilling } from '../features/subscriptionSlice';
+import Container from '../components/ui/Container';
 
 /** Paid/active invoice rows can still renew in Stripe until canceled */
 const canCancelRecurringForRow = (record, allRecords) => {
@@ -222,87 +224,81 @@ const Settings = () => {
   };
 
   const tabs = [
-    { id: 'general', label: 'General', icon: '⚙️' },
-    { id: 'account', label: 'Account', icon: '👤' },
-    { id: 'billing', label: 'Billing', icon: '💳' }
+    { id: 'general', label: 'General' },
+    { id: 'account', label: 'Account' },
+    { id: 'billing', label: 'Billing' },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mt-10">Settings</h1>
-
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+    <div className="py-10 lg:py-14">
+      <Container size="narrow">
+        <div className="mb-8">
+          <span className="section-eyebrow mb-2">Account</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-tight">Settings</h1>
+          <p className="mt-2 text-[var(--text-secondary)]">Manage your profile, security, and billing.</p>
         </div>
 
-        {/* Message Display */}
+        <div className="flex flex-wrap gap-2 p-1 rounded-xl bg-slate-100/80 border border-[var(--surface-border)] mb-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-semibold transition-all min-h-[44px] ${
+                activeTab === tab.id
+                  ? 'bg-white text-[var(--brand-primary)] shadow-sm border border-[var(--surface-border)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {message && (
-          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm">
             {message}
           </div>
         )}
         {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {/* General Tab */}
         {activeTab === 'general' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">General Settings</h2>
-            
+          <div className="card-premium">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">General</h2>
+
             <form onSubmit={handleGeneralSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
-                </label>
+                <label className="field-label">Name</label>
                 <input
                   type="text"
                   value={generalSettings.name}
                   onChange={(e) => setGeneralSettings({ ...generalSettings, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="field-input"
                   placeholder="Your name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
+                <label className="field-label">Email</label>
                 <input
                   type="email"
                   value={generalSettings.email}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                  className="field-input bg-slate-50 text-[var(--text-muted)] cursor-not-allowed"
                   placeholder="Your email"
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-[var(--text-muted)]">
                   Email cannot be changed. Contact support if needed.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Avatar
-                </label>
+                <label className="field-label">Avatar</label>
                 <div className="flex items-center space-x-4">
                   {currentAvatarUrl ? (
                     <img
@@ -341,7 +337,7 @@ const Settings = () => {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                        className="btn-secondary !min-h-0 !py-2 !px-3 text-xs"
                       >
                         Change
                       </button>
@@ -349,9 +345,9 @@ const Settings = () => {
                         <button
                           type="button"
                           onClick={handleAvatarRemove}
-                          className="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100"
+                          className="px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"
                         >
-                          Delete
+                          Remove
                         </button>
                       )}
                     </div>
@@ -359,112 +355,93 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {loading ? 'Saving...' : 'Save Changes'}
+              <div className="pt-2">
+                <button type="submit" disabled={loading} className="btn-primary min-h-[48px] px-6">
+                  {loading ? 'Saving…' : 'Save changes'}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Account Tab */}
         {activeTab === 'account' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h2>
-            
-            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+          <div className="card-premium">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Password</h2>
+            <p className="text-sm text-[var(--text-muted)] mb-6">Update your password to keep your account secure.</p>
+
+            <form onSubmit={handlePasswordSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Password
-                </label>
+                <label className="field-label">Current password</label>
                 <input
                   type="password"
                   value={accountSettings.currentPassword}
                   onChange={(e) => setAccountSettings({ ...accountSettings, currentPassword: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="field-input"
                   placeholder="Enter current password"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Password
-                </label>
+                <label className="field-label">New password</label>
                 <input
                   type="password"
                   value={accountSettings.newPassword}
                   onChange={(e) => setAccountSettings({ ...accountSettings, newPassword: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="field-input"
                   placeholder="Enter new password"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm New Password
-                </label>
+                <label className="field-label">Confirm new password</label>
                 <input
                   type="password"
                   value={accountSettings.confirmPassword}
                   onChange={(e) => setAccountSettings({ ...accountSettings, confirmPassword: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="field-input"
                   placeholder="Confirm new password"
                 />
               </div>
 
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {loading ? 'Updating...' : 'Update Password'}
+              <div className="pt-2">
+                <button type="submit" disabled={loading} className="btn-primary min-h-[48px] px-6">
+                  {loading ? 'Updating…' : 'Update password'}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Billing Tab */}
         {activeTab === 'billing' && (
           <div className="space-y-6">
-            {/* Current Plan */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Current Plan</h2>
-              
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="card-premium">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Current plan</h2>
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-xl border border-[var(--surface-border)] bg-slate-50/50">
                 <div>
-                  <h3 className="font-medium text-gray-900 capitalize">
+                  <h3 className="font-semibold text-[var(--text-primary)] capitalize">
                     {user?.specificPlan?.replace('_', ' ') || 'Free'}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">
                     {currentPlan?.description || 'Basic plan for individuals'}
                   </p>
                   {currentPlan && (
-                    <p className="text-lg font-bold text-blue-600 mt-2">
+                    <p className="text-xl font-bold text-[var(--brand-primary)] mt-3">
                       ₹{currentPlan.price}
-                      <span className="text-sm text-gray-500 font-normal">
+                      <span className="text-sm text-[var(--text-muted)] font-normal">
                         /{currentPlan.billingCycle === 'monthly' ? 'mo' : 'yr'}
                       </span>
                     </p>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="px-3 py-1 bg-green-100 text-green-600 text-xs rounded-full font-medium">
-                    Active
-                  </span>
-                </div>
+                <span className="self-start px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs rounded-full font-semibold">
+                  Active
+                </span>
               </div>
             </div>
 
-            {/* Cancel Recurring Billing */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Cancel Recurring Billing</h2>
+            <div className="card-premium">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Cancel recurring billing</h2>
               
               <div className="space-y-4">
                 {(() => {
@@ -475,7 +452,7 @@ const Settings = () => {
                     .find(record => record.planGroup === user?.plan);
                   
                   return currentRecurringPlan ? (
-                    <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="border border-[var(--surface-border)] rounded-xl p-5 bg-white">
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <h3 className="font-medium text-gray-900 capitalize">
@@ -505,7 +482,7 @@ const Settings = () => {
                             cancelLoading ||
                             cancellingStripeId === (currentRecurringPlan.stripeSubscriptionId || String(currentRecurringPlan.subscriptionId?._id || currentRecurringPlan.subscriptionId || ''))
                           }
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm font-medium"
+                          className="px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 text-sm font-semibold transition-colors"
                         >
                           {cancellingStripeId === (currentRecurringPlan.stripeSubscriptionId || String(currentRecurringPlan.subscriptionId?._id || currentRecurringPlan.subscriptionId || ''))
                             ? 'Cancelling...'
@@ -527,9 +504,8 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Plan Limits */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Plan Limits</h2>
+            <div className="card-premium">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Plan limits</h2>
               
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -562,32 +538,25 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Upgrade Plan */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Upgrade Plan</h2>
-              
-              <p className="text-gray-600 mb-4">
-                Want to upgrade your plan? Check out our pricing page to see available options.
+            <div className="card-premium">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Upgrade plan</h2>
+              <p className="text-[var(--text-secondary)] mb-5">
+                Want more workspaces, members, or features? Compare plans on our pricing page.
               </p>
-              
-              <a
-                href="/pricing"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                View Pricing Plans
-                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link to="/pricing" className="btn-primary inline-flex min-h-[44px] px-6">
+                View pricing
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
+              </Link>
             </div>
 
-            {/* Billing History */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Billing History</h2>
+            <div className="card-premium">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Billing history</h2>
               
               {billingLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-primary)] border-t-transparent animate-spin" />
                 </div>
               ) : billingError ? (
                 <div className="text-center py-8 text-red-500">
@@ -655,7 +624,7 @@ const Settings = () => {
             </div>
           </div>
         )}
-      </div>
+      </Container>
     </div>
   );
 };

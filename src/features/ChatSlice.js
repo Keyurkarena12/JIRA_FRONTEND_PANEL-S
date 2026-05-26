@@ -1,45 +1,39 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { CHAT_API } from "../config/api";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiClient } from '../api/client';
+import { ENDPOINTS } from '../api/endpoints';
 
-const API_URL = CHAT_API;
+const emptyChatState = () => ({
+  currentRoom: null,
+  messages: [],
+  typingUsers: [],
+});
 
 export const getOrCreateChat = createAsyncThunk(
-  "chat/getOrCreate",
+  'chat/getOrCreate',
   async (workspaceId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/chat/workspace/${workspaceId}`, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.chat.workspace(workspaceId));
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
 export const getOrCreateProjectChat = createAsyncThunk(
-  "chat/getOrCreateProjectChat",
+  'chat/getOrCreateProjectChat',
   async (projectId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/chat/project/${projectId}`, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.chat.project(projectId));
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
 export const getDirectChatThunk = createAsyncThunk(
-  "chat/getDirectChat",
+  'chat/getDirectChat',
   async (payload, { rejectWithValue }) => {
     try {
       const userId = typeof payload === 'string' ? payload : payload?.userId;
@@ -50,105 +44,120 @@ export const getDirectChatThunk = createAsyncThunk(
       if (workspaceId) params.workspaceId = workspaceId;
       if (projectId) params.projectId = projectId;
 
-      const response = await axios.get(`${API_URL}/chat/direct/${userId}`, {
-        params,
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.chat.directByUser(userId), { params });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
 export const createDirectChatThunk = createAsyncThunk(
-  "chat/createDirectChat",
+  'chat/createDirectChat',
   async ({ userId, workspaceId, projectId }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/chat/direct`,
-        { userId, workspaceId, projectId },
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        }
-      );
+      const response = await apiClient.post(ENDPOINTS.chat.directCreate, {
+        userId,
+        workspaceId,
+        projectId,
+      });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
 export const getDirectConversationsThunk = createAsyncThunk(
-  "chat/getDirectConversations",
+  'chat/getDirectConversations',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/chat/direct/conversations`, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.chat.directConversations);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
-export const fetchMessages = createAsyncThunk(
-  "chat/fetchMessages",
+export const fetchGroupMessages = createAsyncThunk(
+  'chat/fetchGroupMessages',
   async (roomId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/chat/messages/${roomId}`, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
-      return response.data;
+      const response = await apiClient.get(ENDPOINTS.chat.messages(roomId));
+      return { roomId, messages: response.data };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
+export const fetchDirectMessages = createAsyncThunk(
+  'chat/fetchDirectMessages',
+  async (roomId, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get(ENDPOINTS.chat.messages(roomId));
+      return { roomId, messages: response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+const isGroupRoom = (room) => room && room.type !== 'private';
+
 const chatSlice = createSlice({
-  name: "chat",
+  name: 'chat',
   initialState: {
-    currentRoom: null,
-    messages: [],
+    groupChat: emptyChatState(),
+    directChat: emptyChatState(),
     directConversations: [],
     loading: false,
     error: null,
-    typingUsers: []
   },
   reducers: {
-    addMessage: (state, action) => {
-      state.messages.push(action.payload);
-    },
-    setTyping: (state, action) => {
-      const { userId, userName } = action.payload;
-      if (!state.typingUsers.find(u => u.userId === userId)) {
-        state.typingUsers.push({ userId, userName });
+    addGroupMessage: (state, action) => {
+      const roomId = state.groupChat.currentRoom?._id;
+      if (!roomId) return;
+      const msgRoom = action.payload.chatRoomId || action.payload.chatRoom?._id || action.payload.chatRoom;
+      if (String(msgRoom) === String(roomId)) {
+        state.groupChat.messages.push(action.payload);
       }
     },
-    removeTyping: (state, action) => {
+    addDirectMessage: (state, action) => {
+      const roomId = state.directChat.currentRoom?._id;
+      if (!roomId) return;
+      const msgRoom = action.payload.chatRoomId || action.payload.chatRoom?._id || action.payload.chatRoom;
+      if (String(msgRoom) === String(roomId)) {
+        state.directChat.messages.push(action.payload);
+      }
+    },
+    setGroupTyping: (state, action) => {
+      const { userId, userName } = action.payload;
+      if (!state.groupChat.typingUsers.find((u) => u.userId === userId)) {
+        state.groupChat.typingUsers.push({ userId, userName });
+      }
+    },
+    setDirectTyping: (state, action) => {
+      const { userId, userName } = action.payload;
+      if (!state.directChat.typingUsers.find((u) => u.userId === userId)) {
+        state.directChat.typingUsers.push({ userId, userName });
+      }
+    },
+    removeGroupTyping: (state, action) => {
       const { userId } = action.payload;
-      state.typingUsers = state.typingUsers.filter(u => u.userId !== userId);
+      state.groupChat.typingUsers = state.groupChat.typingUsers.filter((u) => u.userId !== userId);
     },
-    clearChat: (state) => {
-      state.currentRoom = null;
-      state.messages = [];
+    removeDirectTyping: (state, action) => {
+      const { userId } = action.payload;
+      state.directChat.typingUsers = state.directChat.typingUsers.filter((u) => u.userId !== userId);
     },
-    setCurrentRoom: (state, action) => {
-      state.currentRoom = action.payload;
-    }
+    clearGroupChat: (state) => {
+      state.groupChat = emptyChatState();
+    },
+    clearDirectChat: (state) => {
+      state.directChat = emptyChatState();
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -157,7 +166,9 @@ const chatSlice = createSlice({
       })
       .addCase(getOrCreateChat.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentRoom = action.payload;
+        state.groupChat.currentRoom = action.payload;
+        state.groupChat.messages = [];
+        state.groupChat.typingUsers = [];
       })
       .addCase(getOrCreateChat.rejected, (state, action) => {
         state.loading = false;
@@ -168,7 +179,9 @@ const chatSlice = createSlice({
       })
       .addCase(getOrCreateProjectChat.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentRoom = action.payload;
+        state.groupChat.currentRoom = action.payload;
+        state.groupChat.messages = [];
+        state.groupChat.typingUsers = [];
       })
       .addCase(getOrCreateProjectChat.rejected, (state, action) => {
         state.loading = false;
@@ -179,7 +192,9 @@ const chatSlice = createSlice({
       })
       .addCase(getDirectChatThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentRoom = action.payload;
+        state.directChat.currentRoom = action.payload;
+        state.directChat.messages = [];
+        state.directChat.typingUsers = [];
       })
       .addCase(getDirectChatThunk.rejected, (state, action) => {
         state.loading = false;
@@ -190,7 +205,9 @@ const chatSlice = createSlice({
       })
       .addCase(createDirectChatThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentRoom = action.payload;
+        state.directChat.currentRoom = action.payload;
+        state.directChat.messages = [];
+        state.directChat.typingUsers = [];
       })
       .addCase(createDirectChatThunk.rejected, (state, action) => {
         state.loading = false;
@@ -199,11 +216,31 @@ const chatSlice = createSlice({
       .addCase(getDirectConversationsThunk.fulfilled, (state, action) => {
         state.directConversations = action.payload;
       })
-      .addCase(fetchMessages.fulfilled, (state, action) => {
-        state.messages = action.payload;
+      .addCase(fetchGroupMessages.fulfilled, (state, action) => {
+        const { roomId, messages } = action.payload;
+        if (String(state.groupChat.currentRoom?._id) === String(roomId)) {
+          state.groupChat.messages = messages;
+        }
+      })
+      .addCase(fetchDirectMessages.fulfilled, (state, action) => {
+        const { roomId, messages } = action.payload;
+        if (String(state.directChat.currentRoom?._id) === String(roomId)) {
+          state.directChat.messages = messages;
+        }
       });
-  }
+  },
 });
 
-export const { addMessage, setTyping, removeTyping, clearChat, setCurrentRoom } = chatSlice.actions;
+export const {
+  addGroupMessage,
+  addDirectMessage,
+  setGroupTyping,
+  setDirectTyping,
+  removeGroupTyping,
+  removeDirectTyping,
+  clearGroupChat,
+  clearDirectChat,
+} = chatSlice.actions;
+
+export { isGroupRoom };
 export default chatSlice.reducer;

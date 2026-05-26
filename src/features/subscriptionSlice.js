@@ -1,19 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { PLAN_API, SUBSCRIPTION_API } from '../config/api';
+import { apiClient } from '../api/client';
+import { ENDPOINTS } from '../api/endpoints';
 
-const CHECKOUT_API = SUBSCRIPTION_API;
-// ✅ Fetch all plans — GET /api/plan/get-all-plans
 export const fetchPlans = createAsyncThunk(
   'subscription/fetchPlans',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${PLAN_API}/get-all-plans`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.plan.all);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get plans');
@@ -21,17 +14,11 @@ export const fetchPlans = createAsyncThunk(
   }
 );
 
-// ✅ Fetch single plan by name — GET /api/plan/:name
 export const fetchPlanByName = createAsyncThunk(
   'subscription/fetchPlanByName',
   async (name, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${PLAN_API}/${name}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.get(ENDPOINTS.plan.byName(name));
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get plan');
@@ -39,22 +26,11 @@ export const fetchPlanByName = createAsyncThunk(
   }
 );
 
-// ✅ Create checkout session — POST /api/subscription/create-checkout-session
 export const createCheckoutSession = createAsyncThunk(
   'subscription/createCheckoutSession',
   async ({ planId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-
-      const response = await axios.post(
-        `${CHECKOUT_API}/create-checkout-session`,
-        { planId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiClient.post(ENDPOINTS.subscription.checkout, { planId });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create checkout session');
@@ -62,26 +38,14 @@ export const createCheckoutSession = createAsyncThunk(
   }
 );
 
-// ✅ After returning from Stripe — sync user + billing if webhook was not received
 export const verifyCheckoutSession = createAsyncThunk(
   'subscription/verifyCheckoutSession',
   async (sessionId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${CHECKOUT_API}/verify-checkout-session`,
-        { sessionId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiClient.post(ENDPOINTS.subscription.verifyCheckout, { sessionId });
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to verify checkout session'
-      );
+      return rejectWithValue(error.response?.data?.message || 'Failed to verify checkout session');
     }
   }
 );
