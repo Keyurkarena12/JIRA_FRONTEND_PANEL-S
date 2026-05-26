@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getWorkspaceById } from "../features/WorkspaceSlice";
+import { getWorkspaceById, getWorkspaceMembers } from "../features/WorkspaceSlice";
 import { getAllProjects, updateProject, deleteProject, addProjectMember } from "../features/ProjectSlice";
 import { fetchprojectTask, assigneeTaskMember, moveTask } from "../features/TaskSlice";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -60,7 +60,14 @@ const WorkspaceDetail = () => {
 
   useEffect(() => {
     dispatch(getWorkspaceById(workspaceId));
+    dispatch(getWorkspaceMembers(workspaceId));
   }, [workspaceId, dispatch]);
+
+  useEffect(() => {
+    if (activeTab === "members") {
+      dispatch(getWorkspaceMembers(workspaceId));
+    }
+  }, [activeTab, workspaceId, dispatch]);
 
   useEffect(() => {
     if (activeTab === "projects") {
@@ -182,13 +189,28 @@ const WorkspaceDetail = () => {
     return tasks?.filter(task => task.column === column) || [];
   };
 
-  if (loading) return <div className="flex items-center justify-center h-screen bg-[#F4F5F7]"><span className="text-[#5E6C84]">Loading...</span></div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-var(--nav-height))] bg-[var(--surface-bg)]">
+        <div className="w-10 h-10 rounded-full border-2 border-[var(--brand-primary)] border-t-transparent animate-spin mb-4" />
+        <span className="text-[var(--text-secondary)] font-medium">Loading workspace…</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] pt-16">
+    <div className="min-h-[calc(100dvh-var(--nav-height))] bg-[var(--surface-bg)]">
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="lg:hidden fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar overlay"
+        />
+      )}
       <div className="flex">
         {/* ICON SIDEBAR - Dark (tablet+) */}
-        <div className="hidden md:flex fixed z-30 w-16 h-[calc(100vh-4rem)] bg-[#2E1A47] transition-transform duration-300 overflow-y-auto flex-col">
+        <div className="hidden md:flex fixed z-30 w-16 h-[calc(100dvh-var(--nav-height))] workspace-rail transition-transform duration-300 overflow-y-auto flex-col border-r border-white/5">
           <div className="p-3 border-b border-white/10">
             <div
               className={`relative overflow-hidden transition-all duration-300 ${sidebarOpen ? "h-10" : "h-24"
@@ -228,9 +250,9 @@ const WorkspaceDetail = () => {
             <div className="space-y-0.5">
               <button
                 onClick={() => { setActiveTab("overview"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                className={`workspace-rail-item ${activeTab === "overview"
+                  ? "workspace-rail-item-active"
+                  : "workspace-rail-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,9 +261,9 @@ const WorkspaceDetail = () => {
               </button>
               <button
                 onClick={() => { setActiveTab("members"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                className={`workspace-rail-item ${activeTab === "members"
+                  ? "workspace-rail-item-active"
+                  : "workspace-rail-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,9 +272,9 @@ const WorkspaceDetail = () => {
               </button>
               <button
                 onClick={() => { setActiveTab("projects"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                className={`workspace-rail-item ${activeTab === "projects"
+                  ? "workspace-rail-item-active"
+                  : "workspace-rail-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,14 +286,14 @@ const WorkspaceDetail = () => {
         </div>
         {/* NAVIGATION SIDEBAR - Light */}
         <div
-          className={`fixed z-40 w-[min(100vw-3rem,16rem)] sm:w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-transform duration-200 overflow-y-auto shadow-lg md:shadow-none left-0 ${
+          className={`fixed z-40 w-[min(100vw-3rem,16rem)] sm:w-64 h-[calc(100dvh-var(--nav-height))] bg-white border-r border-[var(--surface-border)] transition-transform duration-200 overflow-y-auto shadow-xl md:shadow-none left-0 ${
             sidebarOpen ? 'translate-x-0 md:translate-x-16' : '-translate-x-full'
           }`}
         >
           {/* Workspace Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">{workspace?.name || 'Workspace'}</h2>
+          <div className="p-4 border-b border-[var(--surface-border)]">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-bold text-[var(--text-primary)] truncate">{workspace?.name || 'Workspace'}</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-1 hover:bg-gray-100 rounded"
@@ -291,9 +313,9 @@ const WorkspaceDetail = () => {
             <div className="space-y-0.5">
               <button
                 onClick={() => { setActiveTab("overview"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "overview"
-                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
+                className={`workspace-nav-item ${activeTab === "overview"
+                  ? "workspace-nav-item-active"
+                  : "workspace-nav-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,9 +326,9 @@ const WorkspaceDetail = () => {
 
               <button
                 onClick={() => { setActiveTab("members"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "members"
-                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
+                className={`workspace-nav-item ${activeTab === "members"
+                  ? "workspace-nav-item-active"
+                  : "workspace-nav-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,9 +340,9 @@ const WorkspaceDetail = () => {
 
               <button
                 onClick={() => { setActiveTab("projects"); closeSidebarOnMobile(); }}
-                className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center gap-3 text-sm ${activeTab === "projects"
-                  ? "bg-[#F4F5F7] text-[#0052CC] font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
+                className={`workspace-nav-item ${activeTab === "projects"
+                  ? "workspace-nav-item-active"
+                  : "workspace-nav-item-idle"
                   }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +368,7 @@ const WorkspaceDetail = () => {
 
         {/* MAIN CONTENT */}
         <div
-          className={`flex-1 flex min-w-0 w-full transition-all duration-200 h-[calc(100vh-4rem)] ml-0 ${
+          className={`flex-1 flex min-w-0 w-full transition-all duration-200 h-[calc(100dvh-var(--nav-height))] ml-0 ${
             sidebarOpen ? 'lg:ml-80' : 'md:ml-16'
           }`}
         >
@@ -357,7 +379,7 @@ const WorkspaceDetail = () => {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="md:hidden shrink-0 p-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                className="md:hidden shrink-0 p-2.5 rounded-xl border border-[var(--surface-border)] bg-white text-[var(--text-secondary)] hover:bg-slate-50 shadow-sm"
                 aria-label="Open menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,7 +407,7 @@ const WorkspaceDetail = () => {
             <div className="mb-4 sm:mb-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-semibold text-[#172B4D] truncate">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-tight truncate">
                     {activeTab === "overview" && "Workspace Overview"}
                     {activeTab === "members" && "Team Members"}
                     {activeTab === "projects" && !selectedProject && "Projects"}
@@ -396,7 +418,7 @@ const WorkspaceDetail = () => {
                 {activeTab === "members" && (
                   <Link
                     to={`/workspace/${workspaceId}/add-members`}
-                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
+                    className="btn-primary text-sm px-4 py-2.5 min-h-[44px] flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -408,7 +430,7 @@ const WorkspaceDetail = () => {
                 {activeTab === "projects" && !selectedProject && (
                   <Link
                     to={`/workspace/${workspaceId}/create-project`}
-                    className="bg-[#0052CC] text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-[#0747A6] transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
+                    className="btn-primary text-sm px-4 py-2.5 min-h-[44px] flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -422,50 +444,57 @@ const WorkspaceDetail = () => {
             {/* Content Area */}
             <div>
               {activeTab === "overview" && (
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Workspace Details</h2>
-                  <div className="space-y-4">
+                <div className="card-premium">
+                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Workspace details</h2>
+                  <div className="space-y-5">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Workspace Name</label>
-                      <p className="text-gray-900">{workspace?.name}</p>
+                      <label className="field-label mb-1">Workspace name</label>
+                      <p className="text-[var(--text-primary)] font-medium">{workspace?.name}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Description</label>
-                      <p className="text-gray-900">{workspace?.description || 'No description provided'}</p>
+                      <label className="field-label mb-1">Description</label>
+                      <p className="text-[var(--text-secondary)]">{workspace?.description || 'No description provided'}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Workspace ID</label>
-                      <p className="text-gray-900 text-sm font-mono">{workspace?._id}</p>
+                      <label className="field-label mb-1">Workspace ID</label>
+                      <p className="text-sm font-mono text-[var(--text-muted)] bg-slate-50 px-3 py-2 rounded-lg border border-[var(--surface-border)]">{workspace?._id}</p>
                     </div>
                   </div>
                 </div>
               )}
               {activeTab === "members" && (
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Members</h2>
+                <div className="card-premium">
+                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Team members</h2>
                   {workspace?.members?.length > 0 ? (
                     <div className="space-y-3">
-                      {workspace.members.map((member, index) => (
+                      {workspace.members.map((member, index) => {
+                        const user = typeof member.user === 'object' ? member.user : null;
+                        const displayName = user?.name || user?.email || 'Team member';
+                        const displayEmail = user?.email || '';
+                        return (
                         <div
-                          key={index}
-                          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg"
+                          key={user?._id || member.user || index}
+                          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-[var(--surface-border)] bg-slate-50/50"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <img
-                              src={`https://ui-avatars.com/api/?name=${member.user?.name || member.user?.email || 'User'}&background=6366f1&color=fff&size=40`}
-                              alt={member.user?.name || 'User'}
-                              className="w-10 h-10 rounded-full"
+                              src={user?.avatar?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6366f1&color=fff&size=40`}
+                              alt={displayName}
+                              className="w-10 h-10 rounded-full object-cover"
                             />
                             <div>
-                              <p className="font-medium text-gray-900">{member.user?.name || member.user?.email}</p>
-                              <p className="text-sm text-gray-500">{member.user?.email}</p>
+                              <p className="font-medium text-[var(--text-primary)]">{displayName}</p>
+                              {displayEmail && (
+                                <p className="text-sm text-[var(--text-secondary)]">{displayEmail}</p>
+                              )}
                             </div>
                           </div>
-                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                            {member.role || 'member'}
+                          <span className="px-2.5 py-1 text-xs font-semibold bg-blue-50 text-[var(--brand-primary)] border border-blue-100 rounded-full capitalize">
+                            {(member.role || 'member').replace(/_/g, ' ')}
                           </span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-gray-500">No members found in this workspace.</p>
@@ -482,7 +511,7 @@ const WorkspaceDetail = () => {
                             <div
                               key={project._id}
                               onClick={() => setSelectedProject(project)}
-                              className="bg-gray-50 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-blue-300"
+                              className="bg-gray-50 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border border-[var(--surface-border)] hover:border-blue-200 card-premium !p-6 hover:-translate-y-0.5"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">

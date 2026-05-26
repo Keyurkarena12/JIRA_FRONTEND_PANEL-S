@@ -1,178 +1,164 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { PROJECT_API } from "../config/api";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiClient } from '../api/client';
+import { ENDPOINTS } from '../api/endpoints';
 
-const API = PROJECT_API;
-
-export const createProject = createAsyncThunk("project/create", async ({ name, description, workspaceId }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${API}/create-project/${workspaceId}`, {
-        name,
-        description
-    }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+export const createProject = createAsyncThunk(
+  'project/create',
+  async ({ name, description, workspaceId }) => {
+    const response = await apiClient.post(ENDPOINTS.project.create(workspaceId), {
+      name,
+      description,
     });
-    console.log("slice createProject", response.data);
     return response.data;
+  }
+);
+
+export const getAllProjects = createAsyncThunk(
+  'project/getAll',
+  async ({ workspaceId }) => {
+    const response = await apiClient.get(ENDPOINTS.project.list(workspaceId));
+    return response.data;
+  }
+);
+
+export const updateProject = createAsyncThunk(
+  'project/update',
+  async ({ projectId, name, description }) => {
+    const response = await apiClient.put(ENDPOINTS.project.update(projectId), {
+      name,
+      description,
+    });
+    return response.data;
+  }
+);
+
+export const deleteProject = createAsyncThunk('project/delete', async (projectId) => {
+  const response = await apiClient.delete(ENDPOINTS.project.delete(projectId));
+  return response.data;
 });
 
-export const getAllProjects = createAsyncThunk("project/getAll", async ({ workspaceId }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API}/get-all-projects/${workspaceId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+export const addProjectMember = createAsyncThunk(
+  'project/addMember',
+  async ({ projectId, userId, role }) => {
+    const response = await apiClient.post(ENDPOINTS.project.addMember(projectId), {
+      userId,
+      role,
     });
-    console.log("slice getAllProjects", response.data);
     return response.data;
-});
-
-export const updateProject = createAsyncThunk("project/update", async ({ projectId, name, description }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.put(`${API}/update-project/${projectId}`, {
-        name,
-        description
-    }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    console.log("slice updateProject", response.data);
-    return response.data;
-});
-
-export const deleteProject = createAsyncThunk("project/delete", async (projectId) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.delete(`${API}/delete-project/${projectId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    console.log("slice deleteProject", response.data);
-    return response.data;
-});
-
-export const addProjectMember = createAsyncThunk("project/addMember", async ({ projectId, userId, role }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${API}/add-projectmember/${projectId}`, {
-        userId,
-        role
-    }, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    console.log("slice addProjectMember", response.data);
-    return response.data;
-});
+  }
+);
 
 const projectSlice = createSlice({
-    name: "project",
-    initialState: {
-        projects: [],
-        project: null,
-        loading: false,
-        error: null,
-        success: false
+  name: 'project',
+  initialState: {
+    projects: [],
+    project: null,
+    loading: false,
+    error: null,
+    success: false,
+  },
+  reducers: {
+    clearProjects: (state) => {
+      state.projects = [];
+      state.error = null;
     },
-    reducers: {
-        clearProjects: (state) => {
-            state.projects = [];
-            state.error = null;
-        },
-        setProject: (state, action) => {
-            state.project = action.payload;
-        },
-        resetSuccess: (state) => {
-            state.success = false;
+    setProject: (state, action) => {
+      state.project = action.payload;
+    },
+    resetSuccess: (state) => {
+      state.success = false;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(createProject.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createProject.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.projects.push(action.payload.project);
+        state.error = null;
+      })
+      .addCase(createProject.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.error.message;
+      })
+      .addCase(getAllProjects.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllProjects.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.projects = action.payload.projects || [];
+        state.error = null;
+      })
+      .addCase(getAllProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.error.message;
+      })
+      .addCase(updateProject.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProject.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        const index = state.projects.findIndex(
+          (project) => project._id === action.payload.project._id
+        );
+        if (index !== -1) {
+          state.projects[index] = action.payload.project;
         }
-    },
-    extraReducers: (builder) => {
-        builder
-            .addCase(createProject.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(createProject.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.projects.push(action.payload.project);
-                state.error = null;
-            })
-            .addCase(createProject.rejected, (state, action) => {
-                state.loading = false;
-                state.success = false;
-                state.error = action.error.message;
-            })
-            .addCase(getAllProjects.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(getAllProjects.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.projects = action.payload.projects || [];
-                state.error = null;
-            })
-            .addCase(getAllProjects.rejected, (state, action) => {
-                state.loading = false;
-                state.success = false;
-                state.error = action.error.message;
-            })
-            .addCase(updateProject.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(updateProject.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                const index = state.projects.findIndex(project => project._id === action.payload.project._id);
-                if (index !== -1) {
-                    state.projects[index] = action.payload.project;
-                }
-                state.error = null;
-            })
-            .addCase(updateProject.rejected, (state, action) => {
-                state.loading = false;
-                state.success = false;
-                state.error = action.error.message;
-            })
-            .addCase(deleteProject.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(deleteProject.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.projects = state.projects.filter(project => project._id !== action.payload.projectId);
-                state.error = null;
-            })
-            .addCase(deleteProject.rejected, (state, action) => {
-                state.loading = false;
-                state.success = false;
-                state.error = action.error.message;
-            })
-            .addCase(addProjectMember.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(addProjectMember.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                const index = state.projects.findIndex(project => project._id === action.payload.project._id);
-                if (index !== -1) {
-                    state.projects[index] = action.payload.project;
-                }
-                state.error = null;
-            })
-            .addCase(addProjectMember.rejected, (state, action) => {
-                state.loading = false;
-                state.success = false;
-                state.error = action.error.message;
-            });
-    }
+        state.error = null;
+      })
+      .addCase(updateProject.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteProject.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteProject.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.projects = state.projects.filter(
+          (project) => project._id !== action.payload.projectId
+        );
+        state.error = null;
+      })
+      .addCase(deleteProject.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.error.message;
+      })
+      .addCase(addProjectMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addProjectMember.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        const index = state.projects.findIndex(
+          (project) => project._id === action.payload.project._id
+        );
+        if (index !== -1) {
+          state.projects[index] = action.payload.project;
+        }
+        state.error = null;
+      })
+      .addCase(addProjectMember.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.error.message;
+      });
+  },
 });
 
 export const { clearProjects, setProject } = projectSlice.actions;

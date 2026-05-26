@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { motion } from 'framer-motion';
 import { fetchPlans, createCheckoutSession } from '../features/subscriptionSlice';
 import { currentUser } from '../features/authSlice';
 import { Link } from 'react-router-dom';
+import Container from '../components/ui/Container';
 
 const PLAN_LEVEL = {
   free: 0,
@@ -10,11 +12,28 @@ const PLAN_LEVEL = {
   pro_monthly: 2,
   pro_yearly: 3,
   enterprise_monthly: 4,
-  enterprise_yearly: 5
+  enterprise_yearly: 5,
 };
 
-const getPlanLevel = (specificPlanName) => {
-  return PLAN_LEVEL[specificPlanName] ?? 0;
+const getPlanLevel = (specificPlanName) => PLAN_LEVEL[specificPlanName] ?? 0;
+
+const CheckIcon = () => (
+  <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const PlanBadge = ({ children, variant = 'blue' }) => {
+  const styles = {
+    blue: 'bg-blue-50 text-blue-700 border-blue-100',
+    purple: 'bg-violet-50 text-violet-700 border-violet-100',
+    green: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+  };
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${styles[variant]}`}>
+      {children}
+    </span>
+  );
 };
 
 const Pricing = () => {
@@ -29,25 +48,18 @@ const Pricing = () => {
     dispatch(fetchPlans());
   }, [dispatch]);
 
-  // Always refresh user data when component mounts
   useEffect(() => {
-    if (user) {
-      dispatch(currentUser());
-    }
+    if (user) dispatch(currentUser());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Check if a specific plan variant is the current one
-  const isCurrentSpecificPlan = (specificPlanName) => {
-    return specificPlanName === currentSpecificPlan;
-  };
+  const isCurrentSpecificPlan = (specificPlanName) => specificPlanName === currentSpecificPlan;
 
   const canUpgradeToPlan = (specificPlanName) => {
     if (!user) return specificPlanName !== 'free';
     return getPlanLevel(specificPlanName) > getPlanLevel(currentSpecificPlan);
   };
 
-  
-  // Check if a plan variant should be disabled (current or lower)
   const isSpecificPlanDisabled = (specificPlanName) => {
     if (!user) return specificPlanName === 'free';
     if (isCurrentSpecificPlan(specificPlanName)) return true;
@@ -56,205 +68,180 @@ const Pricing = () => {
 
   const handleUpgrade = async (planId, planName) => {
     if (!user) {
-      alert("Please login first to upgrade your plan.");
+      alert('Please login first to upgrade your plan.');
       return;
     }
-
-    if (isSpecificPlanDisabled(planName)) {
-      return;
-    }
-
+    if (isSpecificPlanDisabled(planName)) return;
     try {
       await dispatch(createCheckoutSession({ planId })).unwrap();
-    } catch (error) {
-      alert(`Failed to create checkout session: ${error}`);
+    } catch (err) {
+      alert(`Failed to create checkout session: ${err}`);
     }
   };
 
-  // ✅ Button label logic for specific plan variants
   const getButtonLabel = (specificPlanName) => {
-    if (isCurrentSpecificPlan(specificPlanName)) return '✓ Current Plan';
-    if (isSpecificPlanDisabled(specificPlanName)) return 'Not Available';
+    if (isCurrentSpecificPlan(specificPlanName)) return 'Current plan';
+    if (isSpecificPlanDisabled(specificPlanName)) return 'Not available';
     return 'Upgrade';
   };
 
-  const hasAvailableUpgradeInGroup = (groupPlans) => {
-    return groupPlans.some((plan) => !isSpecificPlanDisabled(plan.name));
-  };
+  const hasAvailableUpgradeInGroup = (groupPlans) =>
+    groupPlans.some((plan) => !isSpecificPlanDisabled(plan.name));
 
-  // ✅ Button style logic for specific plan variants
-  const getButtonStyle = (specificPlanName, color = 'blue') => {
+  const getVariantButtonClass = (specificPlanName, accent = 'blue') => {
     if (isSpecificPlanDisabled(specificPlanName)) {
-      return 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none';
+      return 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none';
     }
-    return color === 'blue'
-      ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer pointer-events-auto'
-      : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer pointer-events-auto';
+    return accent === 'purple'
+      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg hover:shadow-violet-500/25'
+      : 'btn-primary !py-2 !px-4 !min-h-0 text-sm';
   };
 
-  const freePlan = plans.find(p => p.name === 'free');
-  const proPlans = plans.filter(p => p.planGroup === 'pro');
-  const enterprisePlans = plans.filter(p => p.planGroup === 'enterprise');
+  const freePlan = plans.find((p) => p.name === 'free');
+  const proPlans = plans.filter((p) => p.planGroup === 'pro');
+  const enterprisePlans = plans.filter((p) => p.planGroup === 'enterprise');
+
+  const cycleLabel = (cycle) =>
+    cycle === 'monthly' ? 'mo' : cycle === 'daily' ? 'day' : 'yr';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mt-6">
-            Choose Your Perfect Plan
+    <div className="py-12 lg:py-20">
+      <Container>
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <span className="section-eyebrow mb-4">Pricing</span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--text-primary)] tracking-tight">
+            Simple, transparent pricing
           </h1>
-          <p className="text-xl text-gray-600">
-            Simple, transparent pricing. No hidden fees.
+          <p className="mt-4 text-lg text-[var(--text-secondary)]">
+            Choose the plan that fits your team. Upgrade anytime via Stripe checkout.
           </p>
-          {/* ✅ Current plan indicator */}
+
           {user && (
-            <div className="mt-4 space-y-2">
-              <div className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                Your Current Plan:
-                <span className="ml-1 font-bold capitalize">
-                  {currentPlanName.replace('_', ' ')}
-                </span>
-              </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <PlanBadge variant="blue">
+                Current: {currentPlanName.replace('_', ' ')}
+              </PlanBadge>
               <button
+                type="button"
                 onClick={() => dispatch(currentUser())}
-                className="px-4 py-2 ml-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"
+                className="btn-ghost text-sm py-2 min-h-0"
               >
-                Refresh User Data
+                Refresh plan
               </button>
             </div>
           )}
+
+          {!user && (
+            <p className="mt-6 text-sm text-[var(--text-muted)]">
+              <Link to="/login" className="text-[var(--brand-primary)] font-semibold hover:underline">
+                Sign in
+              </Link>
+              {' '}to upgrade your plan.
+            </p>
+          )}
         </div>
 
-        {/* Loading */}
         {loading && (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center py-16">
+            <div className="w-10 h-10 rounded-full border-2 border-[var(--brand-primary)] border-t-transparent animate-spin" />
           </div>
         )}
 
-        {/* Error */}
         {error && (
-          <div className="text-center text-red-500 py-4 bg-red-50 border border-red-200 rounded-lg mx-auto max-w-md">
-            <strong>Error:</strong> {error}
+          <div className="max-w-md mx-auto mb-8 p-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-center text-sm">
+            {error}
           </div>
         )}
 
-        {/* Plan Cards */}
         {!loading && plans.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-
-            {/* ====== FREE PLAN ====== */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+            {/* Free */}
             {freePlan && (
-              <div className={`bg-white rounded-2xl shadow p-8 border-2 transition-all ${currentPlanName === 'free'
-                ? 'border-blue-500'
-                : 'border-gray-200'
-                }`}>
-                {/* ✅ Current plan badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`card-premium relative ${currentPlanName === 'free' ? 'ring-2 ring-[var(--brand-primary)] ring-offset-2' : ''}`}
+              >
                 {currentPlanName === 'free' && (
-                  <div className="mb-3">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
-                      ✓ Current Plan
-                    </span>
+                  <div className="absolute -top-3 left-6">
+                    <PlanBadge>Current plan</PlanBadge>
                   </div>
                 )}
-
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {freePlan.displayName}
-                </h2>
-                <p className="text-gray-500 mt-2">{freePlan.description}</p>
-
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">₹0</span>
-                  <span className="text-gray-500">/forever</span>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">{freePlan.displayName}</h2>
+                <p className="text-[var(--text-secondary)] mt-2 text-sm">{freePlan.description}</p>
+                <div className="mt-6 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold text-[var(--text-primary)]">₹0</span>
+                  <span className="text-[var(--text-muted)]">/forever</span>
                 </div>
-
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-8 space-y-3">
                   {freePlan.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 text-gray-700">
-                      <span className="text-green-500">✓</span> {f}
+                    <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <CheckIcon />
+                      {f}
                     </li>
                   ))}
                 </ul>
-
-                {/* ✅ Always disabled — free is lowest plan */}
-                <button
-                  disabled
-                  className="w-full mt-8 py-3 rounded-xl bg-gray-100 text-gray-400 font-medium cursor-not-allowed"
-                >
-                  {currentPlanName === 'free' ? '✓ Current Plan' : 'Not Available'}
+                <button type="button" disabled className="w-full mt-8 btn-secondary opacity-60 cursor-not-allowed">
+                  {currentPlanName === 'free' ? 'Current plan' : 'Not available'}
                 </button>
-              </div>
+              </motion.div>
             )}
 
-            {/* ====== PRO PLAN ====== */}
-            <div className={`bg-white rounded-2xl shadow-xl p-8 border-2 relative transition-all ${currentPlanName === 'pro'
-              ? 'border-blue-500'
-              : !hasAvailableUpgradeInGroup(proPlans)
-                ? 'border-gray-200 opacity-60'
-                : 'border-blue-400'
-              }`}>
-
-              {/* Most Popular badge — only show if user can upgrade to pro */}
+            {/* Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className={`card-premium relative lg:scale-[1.02] lg:z-10 ${
+                currentPlanName === 'pro'
+                  ? 'ring-2 ring-[var(--brand-primary)] ring-offset-2'
+                  : hasAvailableUpgradeInGroup(proPlans)
+                    ? 'shadow-[var(--shadow-glow)] border-blue-200'
+                    : ''
+              }`}
+            >
               {hasAvailableUpgradeInGroup(proPlans) && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                  Most Popular
-                </div>
-              )}
-
-              {/* ✅ Current plan badge */}
-              {currentPlanName === 'pro' && (
-                <div className="mb-3">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
-                    ✓ Current Plan Group
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="px-4 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] shadow-lg">
+                    Most popular
                   </span>
                 </div>
               )}
+              {currentPlanName === 'pro' && (
+                <div className="mb-3">
+                  <PlanBadge>Current plan group</PlanBadge>
+                </div>
+              )}
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Pro</h2>
+              <p className="text-[var(--text-secondary)] mt-2 text-sm">Best for growing teams</p>
 
-              <h2 className="text-2xl font-bold text-gray-900">Pro</h2>
-              <p className="text-gray-500 mt-2">Best for growing teams</p>
-
-              {/* Monthly + Yearly */}
               <div className="mt-6 space-y-3">
                 {proPlans.map((plan) => {
                   const disabled = isSpecificPlanDisabled(plan.name);
                   return (
                     <div
                       key={plan._id}
-                      className={`flex items-center justify-between p-3 rounded-xl border ${disabled
-                        ? 'border-gray-100 bg-gray-50'
-                        : 'border-blue-200 hover:border-blue-400'
-                        }`}
+                      className={`flex items-center justify-between gap-3 p-4 rounded-xl border transition-colors ${
+                        disabled ? 'border-slate-100 bg-slate-50/80' : 'border-blue-100 bg-blue-50/30 hover:border-blue-200'
+                      }`}
                     >
-                      <div>
-                        <p className="font-medium text-gray-900">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[var(--text-primary)] text-sm flex items-center gap-2 flex-wrap">
                           {plan.billingCycle === 'monthly' ? 'Monthly' : plan.billingCycle === 'daily' ? 'Daily' : 'Yearly'}
-                          {isCurrentSpecificPlan(plan.name) && (
-                            <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
-                              Current
-                            </span>
-                          )}
+                          {isCurrentSpecificPlan(plan.name) && <PlanBadge variant="blue">Current</PlanBadge>}
                         </p>
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-[var(--brand-primary)] mt-0.5">
                           ₹{plan.price}
-                          <span className="text-sm text-gray-500 font-normal">
-                            /{plan.billingCycle === 'monthly' ? 'mo' : plan.billingCycle === 'daily' ? 'day' : 'yr'}
-                          </span>
+                          <span className="text-sm font-normal text-[var(--text-muted)]">/{cycleLabel(plan.billingCycle)}</span>
                         </p>
                       </div>
                       <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleUpgrade(plan._id, plan.name);
-                        }}
-                        disabled={disabled || loading}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all relative z-10 ${getButtonStyle(plan.name, 'blue')
-                          }`}
                         type="button"
+                        onClick={() => handleUpgrade(plan._id, plan.name)}
+                        disabled={disabled || loading}
+                        className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${getVariantButtonClass(plan.name, 'blue')}`}
                       >
-                        {loading ? '...' : getButtonLabel(plan.name)}
+                        {loading ? '…' : getButtonLabel(plan.name)}
                       </button>
                     </div>
                   );
@@ -263,71 +250,58 @@ const Pricing = () => {
 
               <ul className="mt-6 space-y-3">
                 {proPlans[0]?.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-700">
-                    <span className="text-green-500">✓</span> {f}
+                  <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                    <CheckIcon />
+                    {f}
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
-            {/* ====== ENTERPRISE PLAN ====== */}
-            <div className={`bg-white rounded-2xl shadow p-8 border-2 transition-all ${currentPlanName === 'enterprise'
-              ? 'border-purple-500'
-              : 'border-gray-200'
-              }`}>
-
-              {/* ✅ Current plan badge */}
+            {/* Enterprise */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.16 }}
+              className={`card-premium relative ${
+                currentPlanName === 'enterprise' ? 'ring-2 ring-violet-500 ring-offset-2' : ''
+              }`}
+            >
               {currentPlanName === 'enterprise' && (
                 <div className="mb-3">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-600 text-xs rounded-full font-medium">
-                    ✓ Current Plan Group
-                  </span>
+                  <PlanBadge variant="purple">Current plan group</PlanBadge>
                 </div>
               )}
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Enterprise</h2>
+              <p className="text-[var(--text-secondary)] mt-2 text-sm">For large organizations</p>
 
-              <h2 className="text-2xl font-bold text-gray-900">Enterprise</h2>
-              <p className="text-gray-500 mt-2">For large organizations</p>
-
-              {/* Monthly + Yearly */}
               <div className="mt-6 space-y-3">
                 {enterprisePlans.map((plan) => {
                   const disabled = isSpecificPlanDisabled(plan.name);
                   return (
                     <div
                       key={plan._id}
-                      className={`flex items-center justify-between p-3 rounded-xl border ${disabled
-                        ? 'border-gray-100 bg-gray-50'
-                        : 'border-purple-200 hover:border-purple-400'
-                        }`}
+                      className={`flex items-center justify-between gap-3 p-4 rounded-xl border transition-colors ${
+                        disabled ? 'border-slate-100 bg-slate-50/80' : 'border-violet-100 bg-violet-50/30 hover:border-violet-200'
+                      }`}
                     >
-                      <div>
-                        <p className="font-medium text-gray-900">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[var(--text-primary)] text-sm flex items-center gap-2 flex-wrap">
                           {plan.billingCycle === 'monthly' ? 'Monthly' : plan.billingCycle === 'daily' ? 'Daily' : 'Yearly'}
-                          {isCurrentSpecificPlan(plan.name) && (
-                            <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full font-medium">
-                              Current
-                            </span>
-                          )}
+                          {isCurrentSpecificPlan(plan.name) && <PlanBadge variant="purple">Current</PlanBadge>}
                         </p>
-                        <p className="text-2xl font-bold text-purple-600">
+                        <p className="text-2xl font-bold text-violet-600 mt-0.5">
                           ₹{plan.price}
-                          <span className="text-sm text-gray-500 font-normal">
-                            /{plan.billingCycle === 'monthly' ? 'mo' : plan.billingCycle === 'daily' ? 'day' : 'yr'}
-                          </span>
+                          <span className="text-sm font-normal text-[var(--text-muted)]">/{cycleLabel(plan.billingCycle)}</span>
                         </p>
                       </div>
                       <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleUpgrade(plan._id, plan.name);
-                        }}
-                        disabled={disabled || loading}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all relative z-10 ${getButtonStyle(plan.name, 'purple')
-                          }`}
                         type="button"
+                        onClick={() => handleUpgrade(plan._id, plan.name)}
+                        disabled={disabled || loading}
+                        className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${getVariantButtonClass(plan.name, 'purple')}`}
                       >
-                        {loading ? '...' : getButtonLabel(plan.name)}
+                        {loading ? '…' : getButtonLabel(plan.name)}
                       </button>
                     </div>
                   );
@@ -336,32 +310,22 @@ const Pricing = () => {
 
               <ul className="mt-6 space-y-3">
                 {enterprisePlans[0]?.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-700">
-                    <span className="text-green-500">✓</span> {f}
+                  <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                    <CheckIcon />
+                    {f}
                   </li>
                 ))}
               </ul>
-            </div>
-
+            </motion.div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center mt-12">
-          {/* <p className="text-gray-600">
-            All plans include 14-day money-back guarantee. Cancel anytime.
-          </p> */}
-          <div className="mt-8">
-            <Link
-              to="/"
-              className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
+        <div className="text-center mt-14">
+          <Link to="/workspaces" className="btn-secondary">
+            Back to workspaces
+          </Link>
         </div>
-
-      </div>
+      </Container>
     </div>
   );
 };
