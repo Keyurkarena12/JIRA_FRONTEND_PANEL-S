@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateProfile } from '../features/authSlice';
+import { updateProfile, changePassword } from '../features/authSlice';
 import { fetchBillingHistory } from '../features/billingSlice';
 import { fetchPlans, cancelRecurringBilling } from '../features/subscriptionSlice';
 import Container from '../components/ui/Container';
@@ -32,6 +32,7 @@ const Settings = () => {
   
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [message, setMessage] = useState('');
   const fileInputRef = useRef(null);
 
@@ -82,6 +83,11 @@ const Settings = () => {
 
   // Get current plan details
   const currentPlan = plans.find(p => p.name === user?.specificPlan);
+
+  const usesSocialLogin = Boolean(user?.googleId || user?.githubId);
+  const socialProvider = user?.googleId ? 'Google' : user?.githubId ? 'GitHub' : '';
+
+  const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&])/;
 
   const handleGeneralSubmit = async (e) => {
     e.preventDefault();
@@ -164,19 +170,32 @@ const Settings = () => {
       return;
     }
 
-    setLoading(true);
+    if (!passwordPattern.test(accountSettings.newPassword)) {
+      setError('Password must contain uppercase, lowercase, number, and special character (@$!%*?&)');
+      return;
+    }
+
+    setPasswordLoading(true);
     try {
-      // TODO: Implement password change API
-      setMessage('Password change functionality coming soon!');
+      await dispatch(
+        changePassword({
+          currentPassword: accountSettings.currentPassword,
+          newPassword: accountSettings.newPassword,
+        })
+      ).unwrap();
+
+      setMessage('Password updated successfully!');
       setAccountSettings({
         currentPassword: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmPassword: '',
       });
+      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setError('Failed to update password');
+      setError(err || 'Failed to update password');
+      setTimeout(() => setError(''), 5000);
     } finally {
-      setLoading(false);
+      setPasswordLoading(false);
     }
   };
 
@@ -365,50 +384,87 @@ const Settings = () => {
         )}
 
         {activeTab === 'account' && (
-          <div className="card-premium">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Password</h2>
-            <p className="text-sm text-[var(--text-muted)] mb-6">Update your password to keep your account secure.</p>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-5">
-              <div>
-                <label className="field-label">Current password</label>
-                <input
-                  type="password"
-                  value={accountSettings.currentPassword}
-                  onChange={(e) => setAccountSettings({ ...accountSettings, currentPassword: e.target.value })}
-                  className="field-input"
-                  placeholder="Enter current password"
-                />
+          <div className="space-y-6">
+            {usesSocialLogin && (
+              <div className="card-premium border-blue-100 bg-blue-50/40">
+                <p className="text-sm text-[var(--text-secondary)]">
+                  You signed in with <strong>{socialProvider}</strong>. Password changes are managed through your{' '}
+                  {socialProvider} account.
+                </p>
               </div>
+            )}
 
-              <div>
-                <label className="field-label">New password</label>
-                <input
-                  type="password"
-                  value={accountSettings.newPassword}
-                  onChange={(e) => setAccountSettings({ ...accountSettings, newPassword: e.target.value })}
-                  className="field-input"
-                  placeholder="Enter new password"
-                />
-              </div>
+            {!usesSocialLogin && (
+              <div className="card-premium">
+                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Change password</h2>
+                <p className="text-sm text-[var(--text-muted)] mb-6">
+                  Enter your current password and choose a new one.
+                </p>
 
-              <div>
-                <label className="field-label">Confirm new password</label>
-                <input
-                  type="password"
-                  value={accountSettings.confirmPassword}
-                  onChange={(e) => setAccountSettings({ ...accountSettings, confirmPassword: e.target.value })}
-                  className="field-input"
-                  placeholder="Confirm new password"
-                />
-              </div>
+                <form onSubmit={handlePasswordSubmit} className="space-y-5">
+                  <div>
+                    <label htmlFor="current-password" className="field-label">Current password</label>
+                    <input
+                      id="current-password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={accountSettings.currentPassword}
+                      onChange={(e) =>
+                        setAccountSettings({ ...accountSettings, currentPassword: e.target.value })
+                      }
+                      className="field-input"
+                      placeholder="Enter current password"
+                      required
+                    />
+                  </div>
 
-              <div className="pt-2">
-                <button type="submit" disabled={loading} className="btn-primary min-h-[48px] px-6">
-                  {loading ? 'Updating…' : 'Update password'}
-                </button>
+                  <div>
+                    <label htmlFor="new-password" className="field-label">New password</label>
+                    <input
+                      id="new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={accountSettings.newPassword}
+                      onChange={(e) =>
+                        setAccountSettings({ ...accountSettings, newPassword: e.target.value })
+                      }
+                      className="field-input"
+                      placeholder="Enter new password"
+                      required
+                    />
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">
+                      Must include uppercase, lowercase, number, and special character (@$!%*?&).
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirm-password" className="field-label">Confirm new password</label>
+                    <input
+                      id="confirm-password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={accountSettings.confirmPassword}
+                      onChange={(e) =>
+                        setAccountSettings({ ...accountSettings, confirmPassword: e.target.value })
+                      }
+                      className="field-input"
+                      placeholder="Confirm new password"
+                      required
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={passwordLoading}
+                      className="btn-primary min-h-[48px] px-6"
+                    >
+                      {passwordLoading ? 'Updating…' : 'Update password'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            )}
           </div>
         )}
 

@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { resetpassword } from '../features/authSlice';
 import AuthCard from '../components/auth/AuthCard';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
-    email: '',
+    email: location.state?.email || '',
     resetpasswordcode: '',
     newpassword: '',
   });
