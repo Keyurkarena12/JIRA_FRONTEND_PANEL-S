@@ -17,6 +17,7 @@ export const ENDPOINTS = {
     currentUser: '/auth/current-user',
     user: '/auth/user',
     updateProfile: '/auth/update-profile',
+    changePassword: '/auth/change-password',
   },
 
   workspace: {

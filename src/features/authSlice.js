@@ -20,10 +20,29 @@ export const logoutUser = createAsyncThunk('auth/logout', async () => {
   localStorage.removeItem('user');
 });
 
-export const forgotpassword = createAsyncThunk('auth/forgotpassword', async (email) => {
-  const response = await apiClient.post(ENDPOINTS.auth.forgotPassword, { email });
-  return response.data;
+export const forgotpassword = createAsyncThunk('auth/forgotpassword', async (email, { rejectWithValue }) => {
+  try {
+    const response = await apiClient.post(ENDPOINTS.auth.forgotPassword, { email });
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to send reset code');
+  }
 });
+
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(ENDPOINTS.auth.changePassword, {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to change password');
+    }
+  }
+);
 
 export const resetpassword = createAsyncThunk('auth/resetpassword', async (data) => {
   const response = await apiClient.post(ENDPOINTS.auth.resetPassword, data);
@@ -101,7 +120,18 @@ const authSlice = createSlice({
       })
       .addCase(forgotpassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || action.error.message;
       })
       .addCase(resetpassword.pending, (state) => {
         state.loading = true;
